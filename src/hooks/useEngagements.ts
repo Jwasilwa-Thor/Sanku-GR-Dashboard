@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Engagement } from '../types';
-import { base44 } from '../api/base44Client';
+import { crmClient } from '../api/crmClient';
 import { toast } from 'sonner';
 
 export const useEngagements = (stakeholderId?: string) => {
@@ -14,24 +14,24 @@ export const useEngagements = (stakeholderId?: string) => {
     try {
       let data;
       if (stakeholderId) {
-        data = await base44.entities.Engagement.filter({ stakeholderId });
+        data = await crmClient.entities.Engagement.filter({ stakeholderId });
       } else {
-        data = await base44.entities.Engagement.list();
+        data = await crmClient.entities.Engagement.list();
       }
       setEngagements(data as Engagement[]);
       setError(null);
     } catch (err) {
       console.error('Failed to fetch engagements:', err);
-      setError('Could not load engagement history.');
+      setError('Could not load engagements.');
     } finally {
       if (!isBackground) setLoading(false);
     }
   }, [stakeholderId]);
 
+  // Sync / Polling Logic
   useEffect(() => {
     fetchEngagements();
     
-    // Auto-refresh every 30 seconds
     pollingRef.current = setInterval(() => {
       fetchEngagements(true);
     }, 30000);
@@ -41,14 +41,15 @@ export const useEngagements = (stakeholderId?: string) => {
     };
   }, [fetchEngagements]);
 
+  // CRUD with Optimistic UI
   const addEngagement = async (form: Partial<Engagement>) => {
-    const tempId = `temp-eng-${Date.now()}`;
-    const optimistic = { ...form, id: tempId, date: new Date().toISOString().split('T')[0] } as Engagement;
+    const tempId = `temp-${Date.now()}`;
+    const optimisticItem = { ...form, id: tempId } as Engagement;
     
-    setEngagements(prev => [optimistic, ...prev]);
+    setEngagements(prev => [optimisticItem, ...prev]);
     
     try {
-      const newItem = await base44.entities.Engagement.create(form);
+      const newItem = await crmClient.entities.Engagement.create(form);
       setEngagements(prev => prev.map(item => item.id === tempId ? (newItem as Engagement) : item));
       toast.success('Engagement logged successfully');
       return newItem;
@@ -64,8 +65,8 @@ export const useEngagements = (stakeholderId?: string) => {
     setEngagements(prev => prev.filter(item => item.id !== id));
     
     try {
-      await base44.entities.Engagement.delete(id);
-      toast.success('Engagement record removed');
+      await crmClient.entities.Engagement.delete(id);
+      toast.success('Engagement deleted');
     } catch (err) {
       setEngagements(previous);
       toast.error('Failed to delete engagement. Rolling back.');

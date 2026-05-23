@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Stakeholder } from '../types';
-import { base44 } from '../api/base44Client';
+import { crmClient } from '../api/crmClient';
 import { toast } from 'sonner';
 
 export const useStakeholders = () => {
@@ -12,7 +12,7 @@ export const useStakeholders = () => {
   const fetchStakeholders = useCallback(async (isBackground = false) => {
     if (!isBackground) setLoading(true);
     try {
-      const data = await base44.entities.Stakeholder.list();
+      const data = await crmClient.entities.Stakeholder.list();
       setStakeholders(data as Stakeholder[]);
       setError(null);
     } catch (err) {
@@ -45,7 +45,7 @@ export const useStakeholders = () => {
     setStakeholders(prev => [optimisticItem, ...prev]);
     
     try {
-      const newItem = await base44.entities.Stakeholder.create(form);
+      const newItem = await crmClient.entities.Stakeholder.create(form);
       setStakeholders(prev => prev.map(item => item.id === tempId ? (newItem as Stakeholder) : item));
       toast.success('Stakeholder added successfully');
       return newItem;
@@ -61,7 +61,7 @@ export const useStakeholders = () => {
     setStakeholders(prev => prev.map(item => item.id === id ? { ...item, ...form } : item));
     
     try {
-      const updated = await base44.entities.Stakeholder.update(id, form);
+      const updated = await crmClient.entities.Stakeholder.update(id, form);
       toast.success('Stakeholder updated');
       return updated;
     } catch (err) {
@@ -76,7 +76,7 @@ export const useStakeholders = () => {
     setStakeholders(prev => prev.filter(item => item.id !== id));
     
     try {
-      await base44.entities.Stakeholder.delete(id);
+      await crmClient.entities.Stakeholder.delete(id);
       toast.success('Stakeholder deleted');
     } catch (err) {
       setStakeholders(previous);

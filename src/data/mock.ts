@@ -1,8 +1,183 @@
-import { Stakeholder, Engagement, Project, Policy } from "../types";
+import { Stakeholder, Engagement, Project, Policy, Partner, KPI, Meeting, Process } from "../types";
 import { initialProjects, initialPolicies } from "../utils/grData.js";
 
 export const mockProjects: Project[] = initialProjects as unknown as Project[];
-export const mockPolicies: Policy[] = initialPolicies as unknown as Policy[];
+export const mockPolicies: Policy[] = [
+  {
+    id: "1",
+    title: "National Fortification Bill 2026",
+    type: "Legislation",
+    stage: "Engagement",
+    priority: "Critical",
+    status: "Active",
+    position: "Champion",
+    ministry: "Ministry of Health",
+    summary: "Proposed legislation to mandate fortification of all maize flour processed in Kenya.",
+    nextStep: "Stakeholder alignment meeting with KEBS",
+    deadline: "2026-06-15",
+    assignedTo: ["GR Lead", "Policy Analyst"],
+    ourPosition: "Support mandatory fortification with tax incentives for small-scale millers.",
+    lastMovedAt: "2026-05-10",
+    microWorkflow: [
+      { step: "Issue identified", completed: true, date: "2026-01-10" },
+      { step: "Impact assessment", completed: true, date: "2026-02-15" },
+      { step: "Brief drafted", completed: true, date: "2026-03-20" },
+      { step: "Stakeholder alignment", completed: false },
+      { step: "Submission", completed: false },
+    ],
+    stakeholderStances: [
+      { stakeholderId: "1", stance: "Supportive" },
+      { stakeholderId: "4", stance: "Opposed" },
+    ],
+    stakeholderLinks: ["1", "4"],
+  },
+  {
+    id: "2",
+    title: "KEBS KS 2062 Standards Update",
+    type: "Regulatory",
+    stage: "Analysis",
+    priority: "High",
+    status: "Active",
+    position: "Support",
+    ministry: "KEBS",
+    summary: "Revision of the technical standards for dosifier technology used in small mills.",
+    nextStep: "Draft impact assessment report",
+    deadline: "2026-07-01",
+    assignedTo: ["Policy Analyst"],
+    ourPosition: "Ensure DosiFlo technology remains the benchmark for accuracy.",
+    lastMovedAt: "2026-05-15",
+    microWorkflow: [
+      { step: "Issue identified", completed: true, date: "2026-04-01" },
+      { step: "Impact assessment", completed: false },
+      { step: "Brief drafted", completed: false },
+      { step: "Stakeholder alignment", completed: false },
+      { step: "Submission", completed: false },
+    ],
+    stakeholderStances: [
+      { stakeholderId: "4", stance: "Neutral" },
+    ],
+    stakeholderLinks: ["4"],
+  },
+  {
+    id: "3",
+    title: "County Nutrition Allocation - Nairobi",
+    type: "Budget",
+    stage: "Monitoring",
+    priority: "Medium",
+    status: "Active",
+    position: "Monitor",
+    ministry: "County Government of Nairobi",
+    summary: "Monitoring the allocation of funds for school feeding programs in Nairobi County.",
+    nextStep: "Review gazette notice for county budget",
+    deadline: "2026-08-30",
+    assignedTo: ["GR Lead"],
+    ourPosition: "Encourage direct allocation for fortified flour procurement.",
+    lastMovedAt: "2026-05-01",
+    microWorkflow: [
+      { step: "Issue identified", completed: true, date: "2026-05-01" },
+      { step: "Impact assessment", completed: false },
+      { step: "Brief drafted", completed: false },
+      { step: "Stakeholder alignment", completed: false },
+      { step: "Submission", completed: false },
+    ],
+    stakeholderStances: [],
+    stakeholderLinks: ["2"],
+  },
+  {
+    id: "4",
+    title: "EAC Regional Fortification Harmonization",
+    type: "Policy",
+    stage: "Decision pending",
+    priority: "High",
+    status: "Active",
+    position: "Support",
+    ministry: "EAC Secretariat",
+    summary: "Harmonization of fortification standards across EAC member states.",
+    nextStep: "Awaiting EAC council decision",
+    deadline: "2026-05-20",
+    assignedTo: ["GR Lead"],
+    ourPosition: "Support regional standards to allow cross-border trade of fortified flour.",
+    lastMovedAt: "2026-04-20",
+    microWorkflow: [
+      { step: "Issue identified", completed: true, date: "2025-11-01" },
+      { step: "Impact assessment", completed: true, date: "2025-12-15" },
+      { step: "Brief drafted", completed: true, date: "2026-01-20" },
+      { step: "Stakeholder alignment", completed: true, date: "2026-03-10" },
+      { step: "Submission", completed: true, date: "2026-04-15" },
+    ],
+    stakeholderStances: [
+      { stakeholderId: "7", stance: "Supportive" },
+    ],
+    stakeholderLinks: ["7"],
+  },
+];
+
+export const mockPartners: Partner[] = [
+  { id: "1", name: "World Food Programme (WFP)", type: "UN Agency", stage: "Active", status: "Active", focus: "Joint advocacy on fortification standards and school feeding programmes.", mou: "Yes", contact: "Country Representative", priority: "High", lastMovedAt: "2026-01-01" },
+  { id: "2", name: "Global Alliance for Improved Nutrition (GAIN)", type: "NGO", stage: "Active", status: "Active", focus: "Technical support on fortification quality assurance and regulatory alignment.", mou: "Yes", contact: "Kenya Country Manager", priority: "High", lastMovedAt: "2026-01-01" },
+  { id: "3", name: "Ministry of Agriculture (MoA)", type: "Government", stage: "Negotiation", status: "Active", focus: "Policy alignment and county government sensitization on fortification.", mou: "In Progress", contact: "Director of Crop Nutrition", priority: "Critical", lastMovedAt: "2026-05-10" },
+  { id: "4", name: "Kenya Bureau of Standards (KEBS)", type: "Regulatory Body", stage: "Active", status: "Active", focus: "Standards alignment for KS 2062 and DosiFlo technology certification.", mou: "No", contact: "Standards Manager, Food", priority: "High", lastMovedAt: "2026-01-01" },
+  { id: "5", name: "University of Nairobi — Nutrition Dept.", type: "Academic", stage: "Exploratory", status: "Exploratory", focus: "Research collaboration on nutritional impact of fortified maize flour.", mou: "No", contact: "Head of Nutrition Dept.", priority: "Low", lastMovedAt: "2026-04-15" },
+  { id: "6", name: "USAID Kenya", type: "Donor", stage: "Active", status: "Active", focus: "Donor engagement for GR and fortification scale-up financing.", mou: "No", contact: "Nutrition Specialist", priority: "Medium", lastMovedAt: "2026-01-01" },
+];
+
+export const mockKPIs: KPI[] = [
+  {
+    id: "kpi1",
+    objective: "Stakeholder Engagement",
+    expanded: true,
+    krs: [
+      { id: "kr1.1", label: "KR 1.1", metric: "# of government meetings held", quarter: "Q1", target: "48", current: "12", startDate: "1-Jan-26", dueDate: "30-Jun-26", owner: "GR Lead", status: "On Track", confidence: "High", notes: "" },
+      { id: "kr1.2", label: "KR 1.2", metric: "# of new champions identified", quarter: "Q2", target: "10", current: "3", startDate: "1-Jan-26", dueDate: "30-Sep-26", owner: "GR Lead", status: "At Risk", confidence: "Medium", notes: "" },
+      { id: "kr1.3", label: "KR 1.3", metric: "MoU signed Yes/No", quarter: "Q3", target: "Yes", current: "No", startDate: "1-Jan-26", dueDate: "30-Sep-26", owner: "GR Lead", status: "At Risk", confidence: "Medium", notes: "" },
+      { id: "kr1.4", label: "KR 1.4", metric: "Counties covered #", quarter: "Q4", target: "3", current: "2", startDate: "1-Jan-26", dueDate: "30-Sep-26", owner: "GR Lead", status: "On Track", confidence: "High", notes: "" },
+    ],
+  },
+  {
+    id: "kpi2",
+    objective: "Policy & Advocacy",
+    expanded: true,
+    krs: [
+      { id: "kr2.1", label: "KR 2.1", metric: "Policy briefs submitted", quarter: "Q1", target: "Yes", current: "Yes", startDate: "1-Jan-26", dueDate: "30-Jun-26", owner: "Policy Analyst", status: "Achieved", confidence: "High", notes: "" },
+      { id: "kr2.2", label: "KR 2.2", metric: "Bills tracked and influenced", quarter: "Q2", target: "1800", current: "1390", startDate: "1-Jan-26", dueDate: "31-Dec-26", owner: "GR Lead", status: "On Track", confidence: "Medium", notes: "" },
+      { id: "kr2.3", label: "KR 2.3", metric: "Regulatory submissions", quarter: "Q3", target: "4", current: "2", startDate: "1-Jan-26", dueDate: "30-Sep-26", owner: "Policy Analyst", status: "On Track", confidence: "High", notes: "" },
+    ],
+  },
+  {
+    id: "kpi3",
+    objective: "Partnerships",
+    expanded: true,
+    krs: [
+      { id: "kr3.1", label: "KR 3.1", metric: "New partnership MOUs signed", quarter: "Q1", target: "Yes", current: "In Progress", startDate: "1-Jan-26", dueDate: "30-Jun-26", owner: "GR Lead", status: "At Risk", confidence: "Medium", notes: "" },
+      { id: "kr3.2", label: "KR 3.2", metric: "Active partner engagements", quarter: "Q2", target: "50", current: "18", startDate: "1-Apr-26", dueDate: "30-Sep-26", owner: "GR Team", status: "At Risk", confidence: "Medium", notes: "" },
+      { id: "kr3.3", label: "KR 3.3", metric: "Coalition members recruited", quarter: "Q3", target: "Yes", current: "No", startDate: "1-Jan-26", dueDate: "31-Dec-26", owner: "GR Lead", status: "Behind", confidence: "Low", notes: "" },
+    ],
+  },
+  {
+    id: "kpi4",
+    objective: "Internal Ops",
+    expanded: true,
+    krs: [
+      { id: "kr4.1", label: "KR 4.1", metric: "Team meetings held", quarter: "Q1", target: "2", current: "1", startDate: "1-Jan-26", dueDate: "30-Sep-26", owner: "Ops Lead", status: "On Track", confidence: "High", notes: "" },
+      { id: "kr4.2", label: "KR 4.2", metric: "Action items closed on time", quarter: "Q2", target: "Yes", current: "In Progress", startDate: "1-Jan-26", dueDate: "31-Dec-26", owner: "Ops Lead", status: "At Risk", confidence: "Medium", notes: "" },
+      { id: "kr4.3", label: "KR 4.3", metric: "Process documentation complete", quarter: "Q3", target: "12", current: "5", startDate: "1-Jan-26", dueDate: "31-Dec-26", owner: "Ops Lead", status: "On Track", confidence: "High", notes: "" },
+    ],
+  },
+];
+
+export const mockMeetings: Meeting[] = [
+  { id: "1", title: "Weekly GR Team Standup", date: "Every Monday 9:00 AM", type: "Recurring", attendees: "Full GR Team", notes: "Review weekly priorities, blockers, and stakeholder engagement updates.", actions: ["Update stakeholder tracker", "Share meeting notes to team channel"] },
+  { id: "2", title: "Monthly GR Strategy Review", date: "Last Friday of Month", type: "Recurring", attendees: "GR Lead, Country Director", notes: "Review KPI progress, adjust strategy based on political developments, and plan next month priorities.", actions: ["Prepare KPI dashboard", "Draft monthly GR report"] },
+  { id: "3", title: "Q1 2026 GR Planning Session", date: "6 Jan 2026", type: "Completed", attendees: "Full GR Team", notes: "Set Q1 priorities, assign project ownership, confirm budget allocations.", actions: ["Completed: Q1 work plan", "Completed: Budget allocation memo"] },
+  { id: "4", title: "Regulatory Engagement Prep", date: "15 May 2026", type: "Upcoming", attendees: "GR Lead, Policy Analyst", notes: "Prepare briefing materials and key messages ahead of KEBS technical committee engagement.", actions: ["Draft technical brief", "Confirm meeting with KEBS contact"] },
+];
+
+export const mockProcesses: Process[] = [
+  { id: "1", title: "Stakeholder Entry Process", detail: "All new stakeholders are added to the CRM within 48 hours of first contact. Include full profile, influence/support rating, and initial notes." },
+  { id: "2", title: "Engagement Logging", detail: "Every government interaction must be logged in the CRM within 24 hours including subject, outcome, and follow-up date." },
+  { id: "3", title: "Monthly Reporting", detail: "GR lead submits a monthly narrative report to Country Director by the 5th of each month covering engagements, policy progress, and KPIs." },
+  { id: "4", title: "Escalation Protocol", detail: "Any political risk or significant shift in stakeholder position must be escalated to Country Director within 24 hours." },
+];
 
 export const mockStakeholders: Stakeholder[] = [
   {

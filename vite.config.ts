@@ -14,4 +14,13 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  server: {
+    proxy: {
+      "/api": {
+        target: "https://Sanku-GR.azurewebsites.net",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, "/api"),
+      },
+    },
+  },
 })

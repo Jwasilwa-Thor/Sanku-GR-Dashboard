@@ -1,23 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus, Pencil, Trash2, CheckCircle, Circle, ChevronDown, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-
-const initialMeetings = [
-  { id: 1, title: "Weekly GR Team Standup", date: "Every Monday 9:00 AM", type: "Recurring", attendees: "Full GR Team", notes: "Review weekly priorities, blockers, and stakeholder engagement updates.", actions: ["Update stakeholder tracker", "Share meeting notes to team channel"] },
-  { id: 2, title: "Monthly GR Strategy Review", date: "Last Friday of Month", type: "Recurring", attendees: "GR Lead, Country Director", notes: "Review KPI progress, adjust strategy based on political developments, and plan next month priorities.", actions: ["Prepare KPI dashboard", "Draft monthly GR report"] },
-  { id: 3, title: "Q1 2026 GR Planning Session", date: "6 Jan 2026", type: "Completed", attendees: "Full GR Team", notes: "Set Q1 priorities, assign project ownership, confirm budget allocations.", actions: ["Completed: Q1 work plan", "Completed: Budget allocation memo"] },
-  { id: 4, title: "Regulatory Engagement Prep", date: "15 May 2026", type: "Upcoming", attendees: "GR Lead, Policy Analyst", notes: "Prepare briefing materials and key messages ahead of KEBS technical committee engagement.", actions: ["Draft technical brief", "Confirm meeting with KEBS contact"] },
-];
-
-const initialProcesses = [
-  { id: 1, title: "Stakeholder Entry Process", detail: "All new stakeholders are added to the CRM within 48 hours of first contact. Include full profile, influence/support rating, and initial notes." },
-  { id: 2, title: "Engagement Logging", detail: "Every government interaction must be logged in the CRM within 24 hours including subject, outcome, and follow-up date." },
-  { id: 3, title: "Monthly Reporting", detail: "GR lead submits a monthly narrative report to Country Director by the 5th of each month covering engagements, policy progress, and KPIs." },
-  { id: 4, title: "Escalation Protocol", detail: "Any political risk or significant shift in stakeholder position must be escalated to Country Director within 24 hours." },
-];
+import { crmClient } from "@/api/crmClient";
+import { toast } from "sonner";
 
 const typeColors = {
   Recurring: "bg-chart-2/10 text-chart-2",
@@ -30,28 +18,100 @@ const emptyProcess = { title: "", detail: "" };
 
 export default function InternalOps() {
   const [tab, setTab] = useState("meetings");
-  const [meetings, setMeetings] = useState(initialMeetings);
-  const [processes, setProcesses] = useState(initialProcesses);
+  const [meetings, setMeetings] = useState([]);
+  const [processes, setProcesses] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState(null);
   const [expanded, setExpanded] = useState({});
   const toggleRow = (id) => setExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
 
-  function saveMeeting(data) {
-    if (modal.mode === "add") {
-      setMeetings((prev) => [...prev, { ...data, id: Date.now() }]);
-    } else {
-      setMeetings((prev) => prev.map((m) => m.id === data.id ? data : m));
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  async function fetchData() {
+    setLoading(true);
+    try {
+      const [m, p] = await Promise.all([
+        crmClient.entities.Meeting.list(),
+        crmClient.entities.Process.list(),
+      ]);
+      setMeetings(m);
+      setProcesses(p);
+    } catch (err) {
+      console.error("Failed to fetch internal ops data:", err);
+      toast.error("Could not load internal ops data");
+    } finally {
+      setLoading(false);
     }
-    setModal(null);
   }
 
-  function saveProcess(data) {
-    if (modal.mode === "add") {
-      setProcesses((prev) => [...prev, { ...data, id: Date.now() }]);
-    } else {
-      setProcesses((prev) => prev.map((p) => p.id === data.id ? data : p));
+  async function saveMeeting(data) {
+    try {
+      if (modal.mode === "add") {
+        const created = await crmClient.entities.Meeting.create(data);
+        setMeetings((prev) => [...prev, created]);
+        toast.success("Meeting added");
+      } else {
+        const updated = await crmClient.entities.Meeting.update(data.id, data);
+        setMeetings((prev) => prev.map((m) => m.id === updated.id ? updated : m));
+        toast.success("Meeting updated");
+      }
+      setModal(null);
+    } catch (err) {
+      console.error("Failed to save meeting:", err);
+      toast.error("Failed to save meeting");
     }
-    setModal(null);
+  }
+
+  async function saveProcess(data) {
+    try {
+      if (modal.mode === "add") {
+        const created = await crmClient.entities.Process.create(data);
+        setProcesses((prev) => [...prev, created]);
+        toast.success("Process added");
+      } else {
+        const updated = await crmClient.entities.Process.update(data.id, data);
+        setProcesses((prev) => prev.map((p) => p.id === updated.id ? updated : p));
+        toast.success("Process updated");
+      }
+      setModal(null);
+    } catch (err) {
+      console.error("Failed to save process:", err);
+      toast.error("Failed to save process");
+    }
+  }
+
+  async function deleteMeeting(id) {
+    if (!confirm("Are you sure you want to delete this meeting?")) return;
+    try {
+      await crmClient.entities.Meeting.delete(id);
+      setMeetings((prev) => prev.filter((x) => x.id !== id));
+      toast.success("Meeting deleted");
+    } catch (err) {
+      console.error("Failed to delete meeting:", err);
+      toast.error("Failed to delete meeting");
+    }
+  }
+
+  async function deleteProcess(id) {
+    if (!confirm("Are you sure you want to delete this process?")) return;
+    try {
+      await crmClient.entities.Process.delete(id);
+      setProcesses((prev) => prev.filter((x) => x.id !== id));
+      toast.success("Process deleted");
+    } catch (err) {
+      console.error("Failed to delete process:", err);
+      toast.error("Failed to delete process");
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="w-8 h-8 border-4 border-muted border-t-primary rounded-full animate-spin" />
+      </div>
+    );
   }
 
   return (
@@ -110,7 +170,7 @@ export default function InternalOps() {
                           className="p-1 rounded hover:bg-accent/10 hover:text-accent text-muted-foreground transition-colors">
                           <Pencil className="w-3.5 h-3.5" />
                         </button>
-                        <button onClick={() => setMeetings((prev) => prev.filter((x) => x.id !== m.id))}
+                        <button onClick={() => deleteMeeting(m.id)}
                           className="p-1 rounded hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors">
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -172,7 +232,7 @@ export default function InternalOps() {
                           className="p-1 rounded hover:bg-accent/10 hover:text-accent text-muted-foreground transition-colors">
                           <Pencil className="w-3.5 h-3.5" />
                         </button>
-                        <button onClick={() => setProcesses((prev) => prev.filter((x) => x.id !== p.id))}
+                        <button onClick={() => deleteProcess(p.id)}
                           className="p-1 rounded hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors">
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>

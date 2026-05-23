@@ -1,10 +1,15 @@
-import React from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Users, 
   MessageSquare, 
   TrendingUp, 
   CheckCircle2, 
-  ChevronRight 
+  ChevronRight,
+  Shield,
+  Handshake,
+  DollarSign,
+  AlertCircle,
+  Clock
 } from 'lucide-react';
 import { 
   BarChart, 
@@ -14,50 +19,144 @@ import {
   CartesianGrid, 
   Tooltip, 
   ResponsiveContainer,
-  Cell
+  Cell,
+  PieChart,
+  Pie
 } from 'recharts';
-import { useStakeholders } from '../hooks/useStakeholders';
-import { useEngagements } from '../hooks/useEngagements';
+import { crmClient } from '../api/crmClient';
+import { Stakeholder, Engagement, Policy, Partner, Project } from '../types';
 import logo from '../assets/logo.png';
-
+import { fmtKES } from '../utils/grData';
 
 const Dashboard: React.FC = () => {
-  const { stakeholders } = useStakeholders();
-  const { engagements } = useEngagements();
-  
-  // Note: For a real dashboard, we'd probably have a specific summary API
-  // but for now we'll calculate from the hooks.
-  
+  const [data, setData] = useState<{
+    stakeholders: Stakeholder[];
+    engagements: Engagement[];
+    policies: Policy[];
+    partners: Partner[];
+    projects: Project[];
+  }>({
+    stakeholders: [],
+    engagements: [],
+    policies: [],
+    partners: [],
+    projects: [],
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  async function fetchDashboardData() {
+    setLoading(true);
+    try {
+      const [sh, eng, pol, part, proj] = await Promise.all([
+        crmClient.entities.Stakeholder.list(),
+        crmClient.entities.Engagement.list(),
+        crmClient.entities.Policy.list(),
+        crmClient.entities.Partner.list(),
+        crmClient.entities.Project.list(),
+      ]);
+      setData({
+        stakeholders: sh,
+        engagements: eng,
+        policies: pol,
+        partners: part,
+        projects: proj,
+      });
+    } catch (err) {
+      console.error("Failed to load dashboard data:", err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const metrics = useMemo(() => {
+    const { stakeholders, engagements, policies, partners, projects } = data;
+    
+    // Policy Metrics
+    const activePolicies = policies.filter(p => p.stage !== "Closed").length;
+    const now = new Date();
+    const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+    const hearingsThisWeek = policies.filter(p => {
+      if (!p.deadline || p.stage === "Closed") return false;
+      const d = new Date(p.deadline);
+      return d >= now && d <= nextWeek;
+    }).length;
+
+    // Partnership Metrics
+    const activePartners = partners.filter(p => p.stage === "Active").length;
+    
+    // Financial Metrics
+    const totalBudget = projects.reduce((s, p) => s + (p.budgetKES || 0), 0);
+    const totalSpent = projects.reduce((s, p) => s + (p.spentKES || 0), 0);
+
+    return {
+      stakeholders: stakeholders.length,
+      engagements: engagements.length,
+      activePolicies,
+      hearingsThisWeek,
+      activePartners,
+      totalBudget,
+      totalSpent,
+      utilization: totalBudget > 0 ? Math.round((totalSpent / totalBudget) * 100) : 0
+    };
+  }, [data]);
+
   const stats = [
-    { label: 'Total Stakeholders', value: stakeholders.length, icon: Users, color: 'blue' },
-    { label: 'Engagements', value: engagements.length || 4, icon: MessageSquare, color: 'orange' },
-    { label: 'Positive Outcomes', value: 12, icon: CheckCircle2, color: 'green' },
-    { label: 'Avg Support Score', value: '78%', icon: TrendingUp, color: 'purple' },
+    { label: 'Stakeholders', value: metrics.stakeholders, icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
+    { label: 'Engagements', value: metrics.engagements, icon: MessageSquare, color: 'text-orange-600', bg: 'bg-orange-50' },
+    { label: 'Active Policies', value: metrics.activePolicies, icon: Shield, color: 'text-purple-600', bg: 'bg-purple-50' },
+    { label: 'Active Partners', value: metrics.activePartners, icon: Handshake, color: 'text-emerald-600', bg: 'bg-emerald-50' },
   ];
 
-  const engagementData = [
-    { name: 'Meeting', count: 15 },
-    { name: 'Call', count: 28 },
-    { name: 'Email', count: 42 },
-    { name: 'In Person', count: 12 },
-  ];
+  const engagementData = useMemo(() => {
+    const types = ['Meeting', 'Call', 'Email', 'In Person'];
+    return types.map(type => ({
+      name: type,
+      count: data.engagements.filter(e => e.type === type).length
+    }));
+  }, [data.engagements]);
 
-  const outcomes = [
-    { type: 'Positive', count: 45, percentage: 65, color: '#10B981' },
-    { type: 'Neutral', count: 18, percentage: 26, color: '#64748B' },
-    { type: 'Needs Follow-up', count: 6, percentage: 9, color: '#F59E0B' },
-    { type: 'Negative', count: 0, percentage: 0, color: '#EF4444' },
-  ];
+  const outcomes = useMemo(() => {
+    const total = data.engagements.length || 1;
+    const pos = data.engagements.filter(e => e.outcome === 'Positive').length;
+    const neu = data.engagements.filter(e => e.outcome === 'Neutral').length;
+    const fol = data.engagements.filter(e => e.outcome === 'Needs Follow-up').length;
+    
+    return [
+      { type: 'Positive', count: pos, percentage: Math.round((pos / total) * 100), color: '#10B981' },
+      { type: 'Neutral', count: neu, percentage: Math.round((neu / total) * 100), color: '#64748B' },
+      { type: 'Needs Follow-up', count: fol, percentage: Math.round((fol / total) * 100), color: '#F59E0B' },
+    ];
+  }, [data.engagements]);
 
   const COLORS = ['#FF6B00', '#0A192F', '#64748B', '#94A3B8'];
 
+  if (loading) return <div className="flex items-center justify-center h-screen animate-pulse text-muted-foreground">Loading Executive Dashboard...</div>;
+
   return (
-    <div className="space-y-8">
-      <div className="flex items-end gap-4">
-        <img src={logo} alt="Sanku Logo" className="h-10 w-auto" />
-        <div className="pb-0.5">
-          <h2 className="text-2xl font-bold text-slate-900 leading-none">Executive Overview</h2>
-          <p className="text-slate-500 mt-1">Welcome back. Here's what's happening with Sanku Kenya's relations.</p>
+    <div className="space-y-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="flex items-end justify-between">
+        <div className="flex items-end gap-4">
+          <img src={logo} alt="Sanku Logo" className="h-10 w-auto" />
+          <div className="pb-0.5">
+            <h2 className="text-2xl font-bold text-slate-900 leading-none">Executive Dashboard</h2>
+            <p className="text-slate-500 mt-1">Sanku Kenya Government Relations Performance</p>
+          </div>
+        </div>
+        <div className="flex gap-4">
+          <div className="text-right">
+            <p className="text-[10px] font-bold uppercase text-muted-foreground">Hearings This Week</p>
+            <p className={`text-xl font-bold ${metrics.hearingsThisWeek > 0 ? 'text-destructive' : 'text-slate-900'}`}>
+              {metrics.hearingsThisWeek}
+            </p>
+          </div>
+          <div className="text-right border-l pl-4">
+            <p className="text-[10px] font-bold uppercase text-muted-foreground">Budget Utilization</p>
+            <p className="text-xl font-bold text-slate-900">{metrics.utilization}%</p>
+          </div>
         </div>
       </div>
 
@@ -66,8 +165,8 @@ const Dashboard: React.FC = () => {
         {stats.map((stat, i) => {
           const Icon = stat.icon;
           return (
-            <div key={i} className="card p-6 flex items-center gap-4">
-              <div className={`p-3 rounded-xl bg-slate-50 text-slate-600`}>
+            <div key={i} className="bg-card border rounded-2xl p-6 flex items-center gap-4 shadow-sm">
+              <div className={`p-3 rounded-xl ${stat.bg} ${stat.color}`}>
                 <Icon size={24} />
               </div>
               <div>
@@ -81,13 +180,12 @@ const Dashboard: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Engagement Chart */}
-        <div className="lg:col-span-2 card p-8">
+        <div className="lg:col-span-2 bg-card border rounded-2xl p-8 shadow-sm">
           <div className="flex items-center justify-between mb-8">
-            <h3 className="font-bold text-slate-900 text-lg">Engagement Activity</h3>
-            <select className="text-sm border-none bg-slate-50 rounded-lg px-3 py-1.5 focus:ring-0">
-              <option>Last 30 Days</option>
-              <option>Last Quarter</option>
-            </select>
+            <h3 className="font-bold text-slate-900 text-lg">Engagement Distribution</h3>
+            <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground bg-muted px-3 py-1 rounded-full">
+              <Clock size={12} /> Real-time data
+            </div>
           </div>
           <div className="h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -120,8 +218,8 @@ const Dashboard: React.FC = () => {
         </div>
 
         {/* Outcomes Summary */}
-        <div className="card p-8">
-          <h3 className="font-bold text-slate-900 text-lg mb-6">Outcomes Summary</h3>
+        <div className="bg-card border rounded-2xl p-8 shadow-sm">
+          <h3 className="font-bold text-slate-900 text-lg mb-6">Outcome Analysis</h3>
           <div className="space-y-6">
             {outcomes.map((outcome) => (
               <div key={outcome.type}>
@@ -142,13 +240,13 @@ const Dashboard: React.FC = () => {
             ))}
           </div>
           
-          <div className="mt-10 p-4 bg-orange-50 rounded-xl border border-orange-100">
+          <div className="mt-10 p-4 bg-primary/5 rounded-xl border border-primary/10">
             <div className="flex items-start gap-3">
-              <TrendingUp className="text-sanku-orange mt-0.5" size={18} />
+              <TrendingUp className="text-primary mt-0.5" size={18} />
               <div>
-                <p className="text-sm font-bold text-orange-900">Insight</p>
-                <p className="text-xs text-orange-800/80 leading-relaxed">
-                  Positive outcomes are up by 12% this month. In-person meetings show the highest success rate.
+                <p className="text-sm font-bold text-slate-900">Financial Pulse</p>
+                <p className="text-xs text-slate-600 leading-relaxed mt-1">
+                  Total GR spend to date: <span className="font-bold">{fmtKES(metrics.totalSpent)}</span> against a budget of {fmtKES(metrics.totalBudget)}.
                 </p>
               </div>
             </div>
@@ -157,34 +255,34 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* Recent Activity */}
-      <div className="card">
+      <div className="bg-card border rounded-2xl shadow-sm overflow-hidden">
         <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-          <h3 className="font-bold text-slate-900 text-lg">Recent Engagements</h3>
-          <button className="text-sanku-orange text-sm font-bold flex items-center gap-1 hover:underline">
+          <h3 className="font-bold text-slate-900 text-lg">Recent Engagement Log</h3>
+          <button className="text-primary text-sm font-bold flex items-center gap-1 hover:underline">
             View All <ChevronRight size={16} />
           </button>
         </div>
         <div className="divide-y divide-slate-100">
-          {(engagements.length > 0 ? engagements : []).map((engagement) => {
-            const stakeholder = stakeholders.find(s => s.id === engagement.stakeholderId);
+          {data.engagements.slice(0, 5).map((engagement) => {
+            const stakeholder = data.stakeholders.find(s => s.id === engagement.stakeholderId);
             return (
-              <div key={engagement.id} className="p-6 flex items-center justify-between hover:bg-slate-50 transition-colors">
+              <div key={engagement.id} className="p-6 flex items-center justify-between hover:bg-slate-50/50 transition-colors">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600 font-bold">
+                  <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold text-xs">
                     {stakeholder?.full_name?.charAt(0) ?? "?"}
                   </div>
                   <div>
-                    <p className="font-bold text-slate-900">{engagement.summary}</p>
-                    <p className="text-sm text-slate-500">
-                      With <span className="font-medium text-slate-700">{stakeholder?.full_name ?? "Unknown"}</span> •{" "}
+                    <p className="font-bold text-slate-900 text-sm">{engagement.summary}</p>
+                    <p className="text-xs text-slate-500">
+                      <span className="font-medium text-slate-700">{stakeholder?.full_name ?? "Unknown"}</span> •{" "}
                       {engagement.type}
                     </p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-medium text-slate-900">{engagement.date}</p>
-                  <span className={`text-[10px] uppercase tracking-wider font-bold px-2 py-1 rounded-full ${
-                    engagement.outcome === 'Positive' ? 'bg-green-100 text-green-700' : 
+                  <p className="text-xs font-medium text-slate-900">{engagement.date}</p>
+                  <span className={`text-[9px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full ${
+                    engagement.outcome === 'Positive' ? 'bg-emerald-100 text-emerald-700' : 
                     engagement.outcome === 'Needs Follow-up' ? 'bg-orange-100 text-orange-700' : 'bg-slate-100 text-slate-700'
                   }`}>
                     {engagement.outcome}

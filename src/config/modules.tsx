@@ -16,9 +16,10 @@ import {
 } from "lucide-react";
 
 export const mainNavItems: Array<{ path: string; label: string; icon: LucideIcon }> = [
-  { path: "/", label: "Overview", icon: LayoutGrid },
+  { path: "/", label: "Dashboard", icon: LayoutDashboard },
   { path: "/stakeholders", label: "Stakeholders", icon: Users },
   { path: "/power-map", label: "Power Map", icon: Map },
+  { path: "/about", label: "About Sanku GR", icon: LayoutGrid },
 ];
 
 export type AppModule = {
@@ -79,7 +80,7 @@ export const appModules: AppModule[] = [
     iconBg: "bg-chart-3/10 text-chart-3",
   },
   {
-    path: "/budget-expense",
+    path: "/budget",
     label: "Budget & Expense",
     overviewTitle: "Budget & Expense",
     icon: DollarSign,
@@ -115,12 +116,11 @@ export const appModules: AppModule[] = [
     iconBg: "bg-secondary text-secondary-foreground",
   },
   {
-    path: "/budget",
-    label: "Annual budget",
-    overviewTitle: "Budget",
-    icon: Wallet,
-    description:
-      "High-level annual budget overview, year-on-year planning, and financial summaries for the GR function.",
-    iconBg: "bg-destructive/10 text-destructive",
+    path: "/about",
+    label: "About Sanku GR",
+    overviewTitle: "About Sanku GR",
+    icon: LayoutGrid,
+    description: "Overview of the Sanku Kenya Government Relations CRM platform.",
+    iconBg: "bg-primary/10 text-primary",
   },
 ];

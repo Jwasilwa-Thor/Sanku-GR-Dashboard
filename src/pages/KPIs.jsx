@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus, Pencil, Trash2, X, Check, ChevronDown, ChevronRight } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { crmClient } from "@/api/crmClient";
+import { toast } from "sonner";
 
 const STATUSES = ["On Track", "Achieved", "At Risk", "Behind", "In Progress"];
 const CONFIDENCE = ["High", "Medium", "Low"];
@@ -22,50 +24,6 @@ const confStyle = {
   "Low": "text-red-500 font-semibold",
 };
 
-const defaultKPIs = [
-  {
-    id: "kpi1",
-    objective: "Stakeholder Engagement",
-    expanded: true,
-    krs: [
-      { id: "kr1.1", label: "KR 1.1", metric: "# of government meetings held", quarter: "Q1", target: "48", current: "12", startDate: "1-Jan-26", dueDate: "30-Jun-26", owner: "GR Lead", status: "On Track", confidence: "High", notes: "" },
-      { id: "kr1.2", label: "KR 1.2", metric: "# of new champions identified", quarter: "Q2", target: "10", current: "3", startDate: "1-Jan-26", dueDate: "30-Sep-26", owner: "GR Lead", status: "At Risk", confidence: "Medium", notes: "" },
-      { id: "kr1.3", label: "KR 1.3", metric: "MoU signed Yes/No", quarter: "Q3", target: "Yes", current: "No", startDate: "1-Jan-26", dueDate: "30-Sep-26", owner: "GR Lead", status: "At Risk", confidence: "Medium", notes: "" },
-      { id: "kr1.4", label: "KR 1.4", metric: "Counties covered #", quarter: "Q4", target: "3", current: "2", startDate: "1-Jan-26", dueDate: "30-Sep-26", owner: "GR Lead", status: "On Track", confidence: "High", notes: "" },
-    ],
-  },
-  {
-    id: "kpi2",
-    objective: "Policy & Advocacy",
-    expanded: true,
-    krs: [
-      { id: "kr2.1", label: "KR 2.1", metric: "Policy briefs submitted", quarter: "Q1", target: "Yes", current: "Yes", startDate: "1-Jan-26", dueDate: "30-Jun-26", owner: "Policy Analyst", status: "Achieved", confidence: "High", notes: "" },
-      { id: "kr2.2", label: "KR 2.2", metric: "Bills tracked and influenced", quarter: "Q2", target: "1800", current: "1390", startDate: "1-Jan-26", dueDate: "31-Dec-26", owner: "GR Lead", status: "On Track", confidence: "Medium", notes: "" },
-      { id: "kr2.3", label: "KR 2.3", metric: "Regulatory submissions", quarter: "Q3", target: "4", current: "2", startDate: "1-Jan-26", dueDate: "30-Sep-26", owner: "Policy Analyst", status: "On Track", confidence: "High", notes: "" },
-    ],
-  },
-  {
-    id: "kpi3",
-    objective: "Partnerships",
-    expanded: true,
-    krs: [
-      { id: "kr3.1", label: "KR 3.1", metric: "New partnership MOUs signed", quarter: "Q1", target: "Yes", current: "In Progress", startDate: "1-Jan-26", dueDate: "30-Jun-26", owner: "GR Lead", status: "At Risk", confidence: "Medium", notes: "" },
-      { id: "kr3.2", label: "KR 3.2", metric: "Active partner engagements", quarter: "Q2", target: "50", current: "18", startDate: "1-Apr-26", dueDate: "30-Sep-26", owner: "GR Team", status: "At Risk", confidence: "Medium", notes: "" },
-      { id: "kr3.3", label: "KR 3.3", metric: "Coalition members recruited", quarter: "Q3", target: "Yes", current: "No", startDate: "1-Jan-26", dueDate: "31-Dec-26", owner: "GR Lead", status: "Behind", confidence: "Low", notes: "" },
-    ],
-  },
-  {
-    id: "kpi4",
-    objective: "Internal Ops",
-    expanded: true,
-    krs: [
-      { id: "kr4.1", label: "KR 4.1", metric: "Team meetings held", quarter: "Q1", target: "2", current: "1", startDate: "1-Jan-26", dueDate: "30-Sep-26", owner: "Ops Lead", status: "On Track", confidence: "High", notes: "" },
-      { id: "kr4.2", label: "KR 4.2", metric: "Action items closed on time", quarter: "Q2", target: "Yes", current: "In Progress", startDate: "1-Jan-26", dueDate: "31-Dec-26", owner: "Ops Lead", status: "At Risk", confidence: "Medium", notes: "" },
-      { id: "kr4.3", label: "KR 4.3", metric: "Process documentation complete", quarter: "Q3", target: "12", current: "5", startDate: "1-Jan-26", dueDate: "31-Dec-26", owner: "Ops Lead", status: "On Track", confidence: "High", notes: "" },
-    ],
-  },
-];
-
 function calcProgress(target, current) {
   const t = parseFloat(target);
   const c = parseFloat(current);
@@ -81,47 +39,124 @@ function calcProgress(target, current) {
 const emptyKR = { label: "", metric: "", quarter: "Q1", target: "", current: "", startDate: "", dueDate: "", owner: "", status: "On Track", confidence: "High", notes: "" };
 
 export default function KPIs() {
-  const [kpis, setKpis] = useState(defaultKPIs);
+  const [kpis, setKpis] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [editModal, setEditModal] = useState(null); // { kpiId, kr } or null
   const [addKpiModal, setAddKpiModal] = useState(false);
   const [newKpiName, setNewKpiName] = useState("");
   const [addKrModal, setAddKrModal] = useState(null); // kpiId
 
+  useEffect(() => {
+    fetchKPIs();
+  }, []);
+
+  async function fetchKPIs() {
+    setLoading(true);
+    try {
+      const data = await crmClient.entities.KPI.list();
+      setKpis(data);
+    } catch (err) {
+      console.error("Failed to fetch KPIs:", err);
+      toast.error("Could not load KPIs");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   function toggleExpand(kpiId) {
     setKpis((prev) => prev.map((k) => k.id === kpiId ? { ...k, expanded: !k.expanded } : k));
   }
 
-  function saveKR(kpiId, updated) {
-    setKpis((prev) => prev.map((k) => k.id === kpiId
-      ? { ...k, krs: k.krs.map((r) => r.id === updated.id ? updated : r) }
-      : k
-    ));
-    setEditModal(null);
-  }
-
-  function deleteKR(kpiId, krId) {
-    setKpis((prev) => prev.map((k) => k.id === kpiId ? { ...k, krs: k.krs.filter((r) => r.id !== krId) } : k));
-  }
-
-  function addKPI() {
-    if (!newKpiName.trim()) return;
-    const id = "kpi" + Date.now();
-    setKpis((prev) => [...prev, { id, objective: newKpiName.trim(), expanded: true, krs: [] }]);
-    setNewKpiName("");
-    setAddKpiModal(false);
-  }
-
-  function deleteKPI(kpiId) {
-    setKpis((prev) => prev.filter((k) => k.id !== kpiId));
-  }
-
-  function addKR(kpiId, kr) {
+  async function saveKR(kpiId, updated) {
     const kpi = kpis.find((k) => k.id === kpiId);
+    if (!kpi) return;
+
+    const nextKrs = kpi.krs.map((r) => r.id === updated.id ? updated : r);
+    try {
+      const updatedKpi = await crmClient.entities.KPI.update(kpiId, { ...kpi, krs: nextKrs });
+      setKpis((prev) => prev.map((k) => k.id === kpiId ? updatedKpi : k));
+      toast.success("Key Result updated");
+      setEditModal(null);
+    } catch (err) {
+      console.error("Failed to update KR:", err);
+      toast.error("Failed to update KR");
+    }
+  }
+
+  async function deleteKR(kpiId, krId) {
+    if (!confirm("Are you sure you want to delete this KR?")) return;
+    const kpi = kpis.find((k) => k.id === kpiId);
+    if (!kpi) return;
+
+    const nextKrs = kpi.krs.filter((r) => r.id !== krId);
+    try {
+      const updatedKpi = await crmClient.entities.KPI.update(kpiId, { ...kpi, krs: nextKrs });
+      setKpis((prev) => prev.map((k) => k.id === kpiId ? updatedKpi : k));
+      toast.success("Key Result deleted");
+    } catch (err) {
+      console.error("Failed to delete KR:", err);
+      toast.error("Failed to delete KR");
+    }
+  }
+
+  async function addKPI() {
+    if (!newKpiName.trim()) return;
+    try {
+      const created = await crmClient.entities.KPI.create({
+        objective: newKpiName.trim(),
+        expanded: true,
+        krs: []
+      });
+      setKpis((prev) => [...prev, created]);
+      setNewKpiName("");
+      setAddKpiModal(false);
+      toast.success("KPI group added");
+    } catch (err) {
+      console.error("Failed to add KPI:", err);
+      toast.error("Failed to add KPI group");
+    }
+  }
+
+  async function deleteKPI(kpiId) {
+    if (!confirm("Are you sure you want to delete this entire KPI group?")) return;
+    try {
+      await crmClient.entities.KPI.delete(kpiId);
+      setKpis((prev) => prev.filter((k) => k.id !== kpiId));
+      toast.success("KPI group deleted");
+    } catch (err) {
+      console.error("Failed to delete KPI:", err);
+      toast.error("Failed to delete KPI group");
+    }
+  }
+
+  async function addKR(kpiId, kr) {
+    const kpi = kpis.find((k) => k.id === kpiId);
+    if (!kpi) return;
+
     const num = (kpi?.krs.length || 0) + 1;
-    const kpiNum = kpis.findIndex((k) => k.id === kpiId) + 1;
-    const newKr = { ...kr, id: `kr${kpiNum}.${num}`, label: `KR ${kpiNum}.${num}` };
-    setKpis((prev) => prev.map((k) => k.id === kpiId ? { ...k, krs: [...k.krs, newKr] } : k));
-    setAddKrModal(null);
+    const kpiIndex = kpis.findIndex((k) => k.id === kpiId) + 1;
+    const newKr = { ...kr, id: `kr${kpiIndex}.${num}`, label: `KR ${kpiIndex}.${num}` };
+
+    try {
+      const updatedKpi = await crmClient.entities.KPI.update(kpiId, {
+        ...kpi,
+        krs: [...kpi.krs, newKr]
+      });
+      setKpis((prev) => prev.map((k) => k.id === kpiId ? updatedKpi : k));
+      setAddKrModal(null);
+      toast.success("Key Result added");
+    } catch (err) {
+      console.error("Failed to add KR:", err);
+      toast.error("Failed to add Key Result");
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="w-8 h-8 border-4 border-muted border-t-primary rounded-full animate-spin" />
+      </div>
+    );
   }
 
   return (

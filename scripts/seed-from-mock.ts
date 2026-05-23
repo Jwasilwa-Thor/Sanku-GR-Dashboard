@@ -4,7 +4,7 @@
  *
  * Usage (from repo root):
  *   npm run seed
- *   SEED_API_BASE_URL=https://sank-gr.azurewebsites.net/api npm run seed
+ *   SEED_API_BASE_URL=https://Sanku-GR.azurewebsites.net/api npm run seed
  *
  * Requires Functions running locally or deployed, with COSMOS_* configured and containers present.
  */
@@ -17,6 +17,10 @@ import {
   mockEngagements,
   mockProjects,
   mockPolicies,
+  mockPartners,
+  mockKPIs,
+  mockMeetings,
+  mockProcesses,
 } from "../src/data/mock.ts";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -98,6 +102,22 @@ async function main(): Promise<void> {
   for (const doc of mockEngagements) {
     await upsertEntity(base, "Engagements", doc as unknown as Record<string, unknown>);
     console.log(`  Engagements / ${doc.id}`);
+  }
+  for (const doc of mockPartners) {
+    await upsertEntity(base, "Partners", doc as unknown as Record<string, unknown>);
+    console.log(`  Partners / ${doc.id}`);
+  }
+  for (const doc of mockKPIs) {
+    await upsertEntity(base, "KPIs", doc as unknown as Record<string, unknown>);
+    console.log(`  KPIs / ${doc.id}`);
+  }
+  for (const doc of mockMeetings) {
+    await upsertEntity(base, "Meetings", doc as unknown as Record<string, unknown>);
+    console.log(`  Meetings / ${doc.id}`);
+  }
+  for (const doc of mockProcesses) {
+    await upsertEntity(base, "Processes", doc as unknown as Record<string, unknown>);
+    console.log(`  Processes / ${doc.id}`);
   }
 
   console.log("Done.");

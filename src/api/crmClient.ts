@@ -1,7 +1,8 @@
 import api from "../lib/api";
-import { mockStakeholders, mockEngagements, mockProjects, mockPolicies } from "../data/mock";
+import { mockStakeholders, mockEngagements, mockProjects, mockPolicies, mockPartners, mockKPIs, mockMeetings, mockProcesses } from "../data/mock";
+import { Stakeholder, Engagement, Project, Policy, Partner, KPI, Meeting, Process } from "../types";
 
-// This is a robust base44 client that handles both live Azure API calls 
+// This is a robust CRM client that handles both live Azure API calls 
 // and gracefully falls back to mock data when the API is unconfigured.
 
 const IS_MOCK_MODE = !import.meta.env.VITE_AZURE_API_BASE_URL;
@@ -113,11 +114,15 @@ class EntityClient<T> {
   }
 }
 
-export const base44 = {
+export const crmClient = {
   entities: {
-    Stakeholder: new EntityClient("Stakeholders", mockStakeholders),
-    Engagement: new EntityClient("Engagements", mockEngagements),
-    Project: new EntityClient("Projects", mockProjects),
-    Policy: new EntityClient("Policies", mockPolicies),
+    Stakeholder: new EntityClient<Stakeholder>("Stakeholders", mockStakeholders),
+    Engagement: new EntityClient<Engagement>("Engagements", mockEngagements),
+    Project: new EntityClient<Project>("Projects", mockProjects),
+    Policy: new EntityClient<Policy>("Policies", mockPolicies),
+    Partner: new EntityClient<Partner>("Partners", mockPartners),
+    KPI: new EntityClient<KPI>("KPIs", mockKPIs),
+    Meeting: new EntityClient<Meeting>("Meetings", mockMeetings),
+    Process: new EntityClient<Process>("Processes", mockProcesses),
   }
 };

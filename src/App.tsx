@@ -10,7 +10,6 @@ import GRMandate from "./pages/GRMandate";
 import KPIs from "./pages/KPIs";
 import ServicesStrategy from "./pages/ServicesStrategy";
 import ActivityProjects from "./pages/ActivityProjects";
-import BudgetExpense from "./pages/BudgetExpense";
 import PolicyAdvocacy from "./pages/PolicyAdvocacy";
 import Partnerships from "./pages/Partnerships";
 import InternalOps from "./pages/InternalOps";
@@ -26,8 +25,8 @@ const App: React.FC = () => {
 
       <Route element={<ProtectedRoute />}>
         <Route element={<Layout />}>
-          <Route path="/" element={<Overview />} />
-          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/about" element={<Overview />} />
           <Route path="/stakeholders" element={<Stakeholders />} />
           <Route path="/stakeholders/:id" element={<StakeholderDetail />} />
           <Route path="/power-map" element={<PowerMap />} />
@@ -35,7 +34,6 @@ const App: React.FC = () => {
           <Route path="/kpis" element={<KPIs />} />
           <Route path="/services-strategy" element={<ServicesStrategy />} />
           <Route path="/activity-projects" element={<ActivityProjects />} />
-          <Route path="/budget-expense" element={<BudgetExpense />} />
           <Route path="/policy-advocacy" element={<PolicyAdvocacy />} />
           <Route path="/partnerships" element={<Partnerships />} />
           <Route path="/internal-ops" element={<InternalOps />} />

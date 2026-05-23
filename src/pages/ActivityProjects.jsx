@@ -6,9 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { parseISO, differenceInDays, format, startOfMonth, endOfMonth, eachMonthOfInterval } from "date-fns";
-import { CalendarDays, DollarSign, TableIcon, Plus, Pencil, Trash2, ChevronDown, ChevronRight, Plane, FileText, Users } from "lucide-react";
-import { base44 } from "@/api/base44Client";
+import { CalendarDays, DollarSign, TableIcon, Plus, Pencil, Trash2, ChevronDown, ChevronRight, Plane, FileText, Users, Handshake, Target, Clock, AlertCircle, Search, MapPin, UserCircle } from "lucide-react";
+import { crmClient } from "@/api/crmClient";
 import { budgetLines, fmtKES } from "@/utils/grData";
+import { toast } from "sonner";
 
 const statusColors = {
   Active: "bg-chart-2/10 text-chart-2",
@@ -224,15 +225,15 @@ function GanttView({ items }) {
                   }}>
                   <span className="text-[10px] font-semibold truncate">{p.name}</span>
                 </div>
-                {p.meetings.map((m) => {
+                {(p.meetings || []).map((m, idx) => {
                   const mOff = dayOffset(m.date);
                   if (mOff < 0 || mOff > totalDays) return null;
-                  return <div key={m.date} title={`${m.title} — ${m.date}`} className="absolute top-1 w-2 h-2 rounded-full bg-accent border border-white z-20" style={{ left: `calc(${(mOff / totalDays) * 100}% - 4px)` }} />;
+                  return <div key={`${m.date}-${idx}`} title={`${m.title} — ${m.date}`} className="absolute top-1 w-2 h-2 rounded-full bg-accent border border-white z-20" style={{ left: `calc(${(mOff / totalDays) * 100}% - 4px)` }} />;
                 })}
-                {p.followUps.map((f) => {
+                {(p.followUps || []).map((f, idx) => {
                   const fOff = dayOffset(f.date);
                   if (fOff < 0 || fOff > totalDays) return null;
-                  return <div key={f.date} title={`Follow-up: ${f.label}`} className="absolute bottom-1 w-2 h-2 rounded-sm bg-chart-3 border border-white z-20" style={{ left: `calc(${(fOff / totalDays) * 100}% - 4px)` }} />;
+                  return <div key={`${f.date}-${idx}`} title={`Follow-up: ${f.label}`} className="absolute bottom-1 w-2 h-2 rounded-sm bg-chart-3 border border-white z-20" style={{ left: `calc(${(fOff / totalDays) * 100}% - 4px)` }} />;
                 })}
                 <div className="absolute bottom-0 left-0 right-0 h-1 bg-muted rounded-b">
                   <div className="h-full rounded-b bg-chart-2/60" style={{ width: `${Math.min(100, pct)}%` }} />
@@ -347,9 +348,9 @@ export default function ActivityProjects() {
   useEffect(() => {
     let cancelled = false;
     Promise.all([
-      base44.entities.Project.list(),
-      base44.entities.Policy.list(),
-      base44.entities.Stakeholder.list(),
+      crmClient.entities.Project.list(),
+      crmClient.entities.Policy.list(),
+      crmClient.entities.Stakeholder.list(),
     ])
       .then(([projs, pols, sh]) => {
         if (!cancelled) {
@@ -371,24 +372,28 @@ export default function ActivityProjects() {
   async function save(data) {
     try {
       if (data.id) {
-        const updated = await base44.entities.Project.update(String(data.id), data);
-        setProjects((prev) => prev.map((p) => p.id === updated.id ? updated : p));
+        const updated = await crmClient.entities.Project.update(String(data.id), data);
+        setProjects((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
+        toast.success("Project updated");
       } else {
-        const created = await base44.entities.Project.create(data);
+        const created = await crmClient.entities.Project.create(data);
         setProjects((prev) => [...prev, created]);
+        toast.success("Project created");
       }
     } catch {
-      /* ignore */
+      toast.error("Failed to save project");
     }
     setModal(null);
   }
 
   async function handleDeleteProject(id) {
+    if (!confirm("Delete project?")) return;
     try {
-      await base44.entities.Project.delete(String(id));
+      await crmClient.entities.Project.delete(String(id));
       setProjects((prev) => prev.filter((p) => p.id !== id));
+      toast.success("Project deleted");
     } catch {
-      /* ignore */
+      toast.error("Failed to delete project");
     }
   }
 
