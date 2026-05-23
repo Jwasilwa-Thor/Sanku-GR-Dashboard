@@ -102,7 +102,7 @@ class EntityClient<T> {
         return response.data;
       },
       () => {
-        const newItem = { ...form, id: Math.random().toString(36).substr(2, 9) } as unknown as T;
+        const newItem = { ...form, id: crypto.randomUUID() } as unknown as T;
         this.mockData.push(newItem);
         return newItem;
       }

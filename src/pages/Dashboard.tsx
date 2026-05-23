@@ -181,10 +181,33 @@ const Dashboard: React.FC = () => {
   }, [data.stakeholders]);
 
   // Project Gantt Helpers
-  const GANTT_START = new Date("2025-10-01");
-  const GANTT_END = new Date("2026-12-31");
-  const months = eachMonthOfInterval({ start: GANTT_START, end: GANTT_END });
-  const totalDays = differenceInDays(GANTT_END, GANTT_START) + 1;
+  const { GANTT_START, GANTT_END, months, totalDays } = useMemo(() => {
+    if (data.projects.length === 0) {
+      const start = startOfMonth(new Date());
+      const end = endOfMonth(new Date(start.getTime() + 365 * 24 * 60 * 60 * 1000));
+      return {
+        GANTT_START: start,
+        GANTT_END: end,
+        months: eachMonthOfInterval({ start, end }),
+        totalDays: differenceInDays(end, start) + 1
+      };
+    }
+
+    const projectDates = data.projects.flatMap(p => [parseISO(p.start), parseISO(p.end)]);
+    const minDate = new Date(Math.min(...projectDates.map(d => d.getTime())));
+    const maxDate = new Date(Math.max(...projectDates.map(d => d.getTime())));
+    
+    const start = startOfMonth(new Date(minDate.getFullYear(), minDate.getMonth() - 1, 1));
+    const end = endOfMonth(new Date(maxDate.getFullYear(), maxDate.getMonth() + 2, 0));
+    
+    return {
+      GANTT_START: start,
+      GANTT_END: end,
+      months: eachMonthOfInterval({ start, end }),
+      totalDays: differenceInDays(end, start) + 1
+    };
+  }, [data.projects]);
+
   const dayOffset = (dateStr: string) => Math.max(0, differenceInDays(parseISO(dateStr), GANTT_START));
   const daySpan = (s: string, e: string) => Math.max(1, differenceInDays(parseISO(e), parseISO(s)) + 1);
 

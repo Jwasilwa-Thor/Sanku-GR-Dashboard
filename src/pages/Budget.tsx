@@ -127,7 +127,7 @@ function TableView({ items, projects, onEdit, onDelete, onLink }) {
                         <LinkageTable 
                           links={b.links || []} 
                           projects={projects} 
-                          onUnlink={() => {}}
+                          onUnlink={(linkId) => onDeleteLink(b.id, linkId)}
                         />
                       </div>
                     </td>
@@ -209,7 +209,7 @@ export default function Budget() {
 
     try {
       const newLink: BudgetLink = {
-        id: Math.random().toString(36).substr(2, 9),
+        id: crypto.randomUUID(),
         budgetId,
         ...linkData,
         linkedAt: new Date().toISOString(),
@@ -235,6 +235,35 @@ export default function Budget() {
       fetchData(); // Refresh audit logs
     } catch {
       toast.error("Linking failed");
+    }
+  }
+
+  async function onDeleteLink(budgetId: string, linkId: string) {
+    if (!confirm("Remove this budget allocation?")) return;
+    
+    const budget = budgets.find(b => b.id === budgetId);
+    if (!budget) return;
+
+    try {
+      const linkToRemove = budget.links.find(l => l.id === linkId);
+      const updatedLinks = budget.links.filter(l => l.id !== linkId);
+      const updated = await crmClient.entities.Budget.update(budgetId, { links: updatedLinks });
+
+      // Create Audit Log
+      await crmClient.entities.AuditLog.create({
+        entityType: "Link",
+        entityId: linkId,
+        action: "Unlink",
+        changes: `Unlinked ${linkToRemove?.activityId ? "activity" : "project"} from budget '${budget.lineItem}' (Reversed allocation: ${linkToRemove?.allocatedAmount})`,
+        timestamp: new Date().toISOString(),
+        userId: "Current User"
+      });
+
+      setBudgets(prev => prev.map(b => b.id === updated.id ? updated : b));
+      toast.success("Allocation removed and logged");
+      fetchData();
+    } catch {
+      toast.error("Failed to remove link");
     }
   }
 

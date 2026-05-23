@@ -61,7 +61,7 @@ export async function entities(request: HttpRequest, context: InvocationContext)
             const body = (await request.json()) as Record<string, unknown>;
             context.log(`${request.method} body:`, JSON.stringify(body));
             if (request.method === "POST" && !body.id) {
-                body.id = Math.random().toString(36).substring(2, 11);
+                body.id = crypto.randomUUID();
             }
             const { resource } = await container.items.upsert(body);
             return { status: 201, jsonBody: resource };

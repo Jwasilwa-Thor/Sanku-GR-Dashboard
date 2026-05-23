@@ -1,17 +1,17 @@
 import React, { useState, useEffect, useMemo, Fragment } from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { parseISO, differenceInDays, format, startOfMonth, endOfMonth, eachMonthOfInterval } from "date-fns";
-import { CalendarDays, DollarSign, Table2, Plus, Pencil, Trash2, ChevronDown, ChevronRight, Plane, FileText, Users, Handshake, Target, Clock, AlertCircle, Search, MapPin, UserCircle } from "lucide-react";
+import { Plus, Pencil, Trash2, ChevronDown, ChevronRight, Plane, FileText, DollarSign, Table2, CalendarDays } from "lucide-react";
 import { crmClient } from "@/api/crmClient";
 import { budgetLines, fmtKES } from "@/utils/grData";
 import { toast } from "sonner";
+import { Project, Policy, Stakeholder, Budget, BudgetLink } from "@/types";
 
-const statusColors = {
+const statusColors: Record<string, string> = {
   Active: "bg-chart-2/10 text-chart-2",
   Planning: "bg-chart-3/10 text-chart-3",
   Completed: "bg-muted text-muted-foreground",
@@ -19,14 +19,22 @@ const statusColors = {
 };
 
 // ─── Travel Sub-table ─────────────────────────────────────────────────────────
-function TravelTable({ rows, onChange }) {
+interface TravelRow {
+  who: string;
+  destination: string;
+  days: number;
+  perDiem: number;
+  transport: number;
+}
+
+function TravelTable({ rows, onChange }: { rows: TravelRow[], onChange: (rows: TravelRow[]) => void }) {
   const total = rows.reduce((s, r) => s + (Number(r.days) * Number(r.perDiem) + Number(r.transport)), 0);
-  function setRow(i, k, v) {
+  function setRow(i: number, k: keyof TravelRow, v: string | number) {
     const next = rows.map((r, idx) => idx === i ? { ...r, [k]: v } : r);
     onChange(next);
   }
   function addRow() { onChange([...rows, { who: "", destination: "", days: 1, perDiem: 5000, transport: 0 }]); }
-  function removeRow(i) { onChange(rows.filter((_, idx) => idx !== i)); }
+  function removeRow(i: number) { onChange(rows.filter((_, idx) => idx !== i)); }
 
   return (
     <div className="mt-2">
@@ -51,9 +59,9 @@ function TravelTable({ rows, onChange }) {
                   <tr key={i}>
                     <td className="px-2 py-1"><input value={r.who} onChange={(e) => setRow(i, "who", e.target.value)} className="w-full bg-transparent outline-none border-b border-transparent focus:border-primary" placeholder="—" /></td>
                     <td className="px-2 py-1"><input value={r.destination} onChange={(e) => setRow(i, "destination", e.target.value)} className="w-full bg-transparent outline-none border-b border-transparent focus:border-primary" placeholder="—" /></td>
-                    <td className="px-2 py-1 w-12"><input type="number" min={1} value={r.days} onChange={(e) => setRow(i, "days", e.target.value)} className="w-full bg-transparent outline-none border-b border-transparent focus:border-primary text-center" /></td>
-                    <td className="px-2 py-1 w-28"><input type="number" value={r.perDiem} onChange={(e) => setRow(i, "perDiem", e.target.value)} className="w-full bg-transparent outline-none border-b border-transparent focus:border-primary text-right" /></td>
-                    <td className="px-2 py-1 w-24"><input type="number" value={r.transport} onChange={(e) => setRow(i, "transport", e.target.value)} className="w-full bg-transparent outline-none border-b border-transparent focus:border-primary text-right" /></td>
+                    <td className="px-2 py-1 w-12"><input type="number" min={1} value={r.days} onChange={(e) => setRow(i, "days", Number(e.target.value))} className="w-full bg-transparent outline-none border-b border-transparent focus:border-primary text-center" /></td>
+                    <td className="px-2 py-1 w-28"><input type="number" value={r.perDiem} onChange={(e) => setRow(i, "perDiem", Number(e.target.value))} className="w-full bg-transparent outline-none border-b border-transparent focus:border-primary text-right" /></td>
+                    <td className="px-2 py-1 w-24"><input type="number" value={r.transport} onChange={(e) => setRow(i, "transport", Number(e.target.value))} className="w-full bg-transparent outline-none border-b border-transparent focus:border-primary text-right" /></td>
                     <td className="px-2 py-1 text-right font-medium text-foreground">{fmtKES(rowTotal)}</td>
                     <td className="px-1 py-1"><button onClick={() => removeRow(i)} className="text-muted-foreground hover:text-destructive"><Trash2 className="w-3 h-3" /></button></td>
                   </tr>
@@ -74,9 +82,9 @@ function TravelTable({ rows, onChange }) {
 }
 
 // ─── Table View ────────────────────────────────────────────────────────────────
-function TableView({ items, stakeholders, policies, onEdit, onDelete }) {
-  const [expanded, setExpanded] = useState({});
-  const toggle = (id) => setExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
+function TableView({ items, policies, onEdit, onDelete }: { items: Project[], policies: Policy[], onEdit: (p: Project) => void, onDelete: (id: string) => void }) {
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const toggle = (id: string) => setExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
 
   return (
     <div className="futuristic-table-container overflow-x-auto">
@@ -145,7 +153,7 @@ function TableView({ items, stakeholders, policies, onEdit, onDelete }) {
                           <div>
                             <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3 flex items-center gap-1.5"><FileText className="w-3.5 h-3.5" /> Linked Policies</p>
                             {linkedPols.length === 0 ? <p className="text-slate-400 italic">No associated policy initiatives</p> :
-                              <div className="flex flex-wrap gap-2">{linkedPols.map((pl) => <Badge key={pl.id} variant="outline" className="bg-white/80 border-slate-200 text-slate-600">{pl.title}</Badge>)}</div>}
+                              <div className="flex flex-wrap gap-2">{linkedPols.map((pl) => <Badge key={pl?.id} variant="outline" className="bg-white/80 border-slate-200 text-slate-600">{pl?.title}</Badge>)}</div>}
                           </div>
                           <div>
                             <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3 flex items-center gap-1.5"><Plane className="w-3.5 h-3.5" /> Logistics & Travel</p>
@@ -184,17 +192,40 @@ function TableView({ items, stakeholders, policies, onEdit, onDelete }) {
 }
 
 // ─── Gantt ────────────────────────────────────────────────────────────────────
-const GANTT_START = new Date("2025-10-01");
-const GANTT_END = new Date("2026-12-31");
-const months = eachMonthOfInterval({ start: GANTT_START, end: GANTT_END });
-const totalDays = differenceInDays(GANTT_END, GANTT_START) + 1;
+function GanttView({ items }: { items: Project[] }) {
+  const { GANTT_START, GANTT_END, months, totalDays } = useMemo(() => {
+    if (items.length === 0) {
+      const start = startOfMonth(new Date());
+      const end = endOfMonth(new Date(start.getTime() + 365 * 24 * 60 * 60 * 1000));
+      return {
+        GANTT_START: start,
+        GANTT_END: end,
+        months: eachMonthOfInterval({ start, end }),
+        totalDays: differenceInDays(end, start) + 1
+      };
+    }
 
-function dayOffset(dateStr) { return Math.max(0, differenceInDays(parseISO(dateStr), GANTT_START)); }
-function daySpan(s, e) { return Math.max(1, differenceInDays(parseISO(e), parseISO(s)) + 1); }
+    const projectDates = items.flatMap(p => [parseISO(p.start), parseISO(p.end)]);
+    const minDate = new Date(Math.min(...projectDates.map(d => d.getTime())));
+    const maxDate = new Date(Math.max(...projectDates.map(d => d.getTime())));
+    
+    const start = startOfMonth(new Date(minDate.getFullYear(), minDate.getMonth() - 1, 1));
+    const end = endOfMonth(new Date(maxDate.getFullYear(), maxDate.getMonth() + 2, 0));
+    
+    return {
+      GANTT_START: start,
+      GANTT_END: end,
+      months: eachMonthOfInterval({ start, end }),
+      totalDays: differenceInDays(end, start) + 1
+    };
+  }, [items]);
 
-function GanttView({ items }) {
+  const dayOffset = (dateStr: string) => Math.max(0, differenceInDays(parseISO(dateStr), GANTT_START));
+  const daySpan = (s: string, e: string) => Math.max(1, differenceInDays(parseISO(e), parseISO(s)) + 1);
+
   const today = new Date();
   const todayOffset = differenceInDays(today, GANTT_START);
+
   return (
     <div className="overflow-x-auto rounded-xl border bg-card shadow-sm">
       <div style={{ minWidth: 900 }}>
@@ -265,12 +296,19 @@ function GanttView({ items }) {
 }
 
 // ─── Project Modal ─────────────────────────────────────────────────────────────
-function ProjectModal({ initial, policies, stakeholders, onSave, onClose }) {
-  const [form, setForm] = useState({ ...initial });
-  const [budgets, setBudgets] = useState([]);
-  const [links, setLinks] = useState([]);
+interface ProjectModalProps {
+  initial: Partial<Project>;
+  policies: Policy[];
+  onSave: (data: Partial<Project>) => void;
+  onClose: () => void;
+}
+
+function ProjectModal({ initial, policies, onSave, onClose }: ProjectModalProps) {
+  const [form, setForm] = useState<Partial<Project>>({ ...initial });
+  const [budgets, setBudgets] = useState<Budget[]>([]);
+  const [links, setLinks] = useState<BudgetLink[]>([]);
   
-  const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+  const set = (k: keyof Project, v: any) => setForm((f) => ({ ...f, [k]: v }));
 
   useEffect(() => {
     crmClient.entities.Budget.list().then(setBudgets);
@@ -278,13 +316,12 @@ function ProjectModal({ initial, policies, stakeholders, onSave, onClose }) {
 
   useEffect(() => {
     if (initial.id) {
-      // Find all budget links for this project
       const allLinks = budgets.flatMap(b => (b.links || []).filter(l => l.projectId === initial.id));
       setLinks(allLinks);
     }
   }, [budgets, initial.id]);
 
-  function togglePolicy(pid) {
+  function togglePolicy(pid: string) {
     const current = form.linkedPolicies || [];
     set("linkedPolicies", current.includes(pid) ? current.filter((x) => x !== pid) : [...current, pid]);
   }
@@ -333,10 +370,10 @@ function ProjectModal({ initial, policies, stakeholders, onSave, onClose }) {
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <span className="text-xs text-slate-500">Allocated via System</span>
-                    <span className="text-xs font-bold text-slate-900">{totalAllocated.toLocaleString()} KES</span>
+                    <span className="text-xs font-bold text-slate-900">{(totalAllocated || 0).toLocaleString()} KES</span>
                   </div>
                   <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
-                    <div className="h-full bg-emerald-500" style={{ width: `${Math.min(100, (totalAllocated / form.budgetKES) * 100)}%` }} />
+                    <div className="h-full bg-emerald-500" style={{ width: `${Math.min(100, (totalAllocated / (form.budgetKES || 1)) * 100)}%` }} />
                   </div>
                   <p className="text-[9px] text-slate-400 italic mt-1">* Budget linkages are managed in the Budget Oversight module.</p>
                 </div>
@@ -373,7 +410,7 @@ function ProjectModal({ initial, policies, stakeholders, onSave, onClose }) {
             </div>
           </div>
 
-          <TravelTable rows={form.travel || []} onChange={(v) => set("travel", v)} />
+          <TravelTable rows={(form.travel as TravelRow[]) || []} onChange={(v) => set("travel", v)} />
 
           <div className="flex gap-2 justify-end pt-4 border-t">
             <Button variant="outline" size="sm" onClick={onClose} className="rounded-xl">Cancel</Button>
@@ -386,16 +423,15 @@ function ProjectModal({ initial, policies, stakeholders, onSave, onClose }) {
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
-const emptyProject = { name: "", category: "Policy", status: "Active", owner: "", description: "", start: "", end: "", budgetLine: budgetLines[0], budgetKES: 0, spentKES: 0, meetings: [], followUps: [], travel: [], linkedPolicies: [] };
+const emptyProject: Partial<Project> = { name: "", category: "Policy", status: "Active", owner: "", description: "", start: "", end: "", budgetLine: budgetLines[0], budgetKES: 0, spentKES: 0, meetings: [], followUps: [], travel: [], linkedPolicies: [] };
 
 export default function ActivityProjects() {
-  const [projects, setProjects] = useState([]);
-  const [policies, setPolicies] = useState([]);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [policies, setPolicies] = useState<Policy[]>([]);
   const [cat, setCat] = useState("All");
   const [st, setSt] = useState("All");
-  const [view, setView] = useState("table");
-  const [modal, setModal] = useState(null);
-  const [stakeholders, setStakeholders] = useState([]);
+  const [view, setView] = useState<"table" | "gantt">("table");
+  const [modal, setModal] = useState<{ data: Partial<Project> } | null>(null);
 
   const categories = useMemo(() => ["All", ...new Set(projects.map((p) => p.category))], [projects]);
   const statuses = useMemo(() => ["All", ...new Set(projects.map((p) => p.status))], [projects]);
@@ -405,13 +441,11 @@ export default function ActivityProjects() {
     Promise.all([
       crmClient.entities.Project.list(),
       crmClient.entities.Policy.list(),
-      crmClient.entities.Stakeholder.list(),
     ])
-      .then(([projs, pols, sh]) => {
+      .then(([projs, pols]) => {
         if (!cancelled) {
           setProjects(projs);
           setPolicies(pols);
-          setStakeholders(sh);
         }
       })
       .catch(() => {});
@@ -424,7 +458,7 @@ export default function ActivityProjects() {
     (p) => (cat === "All" || p.category === cat) && (st === "All" || p.status === st)
   );
 
-  async function save(data) {
+  async function save(data: Partial<Project>) {
     try {
       if (data.id) {
         const updated = await crmClient.entities.Project.update(String(data.id), data);
@@ -441,7 +475,7 @@ export default function ActivityProjects() {
     setModal(null);
   }
 
-  async function handleDeleteProject(id) {
+  async function handleDeleteProject(id: string) {
     if (!confirm("Delete project?")) return;
     try {
       await crmClient.entities.Project.delete(String(id));
@@ -453,8 +487,8 @@ export default function ActivityProjects() {
   }
 
   const totalTravel = projects.reduce((s, p) => s + (p.travel || []).reduce((ts, r) => ts + Number(r.days) * Number(r.perDiem) + Number(r.transport), 0), 0);
-  const totalBudget = projects.reduce((s, p) => s + p.budgetKES, 0);
-  const totalSpent = projects.reduce((s, p) => s + p.spentKES, 0);
+  const totalBudget = projects.reduce((s, p) => s + (p.budgetKES || 0), 0);
+  const totalSpent = projects.reduce((s, p) => s + (p.spentKES || 0), 0);
 
   return (
     <div className="space-y-4">
@@ -463,6 +497,14 @@ export default function ActivityProjects() {
           <div className="pr-4 border-r border-slate-100">
             <h1 className="text-xl font-bold tracking-tight text-slate-900 whitespace-nowrap">Activity &amp; Projects</h1>
             <p className="text-slate-500 text-[10px] uppercase font-bold tracking-wider mt-0.5 whitespace-nowrap">Portfolio Management</p>
+          </div>
+          <div className="flex bg-slate-100 p-1 rounded-xl">
+            <button onClick={() => setView("table")} className={`p-1.5 rounded-lg transition-all ${view === "table" ? "bg-white shadow-sm text-slate-900" : "text-slate-500 hover:text-slate-700"}`}>
+              <Table2 size={16} />
+            </button>
+            <button onClick={() => setView("gantt")} className={`p-1.5 rounded-lg transition-all ${view === "gantt" ? "bg-white shadow-sm text-slate-900" : "text-slate-500 hover:text-slate-700"}`}>
+              <CalendarDays size={16} />
+            </button>
           </div>
         </div>
         <Button size="sm" className="gap-1.5 h-9 rounded-xl bg-sanku-orange hover:bg-sanku-orange/90 text-white font-bold" onClick={() => setModal({ data: { ...emptyProject } })}>
@@ -506,15 +548,18 @@ export default function ActivityProjects() {
         </div>
       </div>
 
-      <TableView items={filtered} stakeholders={stakeholders} policies={policies}
-        onEdit={(p) => setModal({ data: { ...p } })}
-        onDelete={handleDeleteProject} />
+      {view === "table" ? (
+        <TableView items={filtered} policies={policies}
+          onEdit={(p) => setModal({ data: { ...p } })}
+          onDelete={handleDeleteProject} />
+      ) : (
+        <GanttView items={filtered} />
+      )}
 
       {modal && (
         <ProjectModal
           initial={modal.data}
           policies={policies}
-          stakeholders={stakeholders}
           onSave={save}
           onClose={() => setModal(null)}
         />
