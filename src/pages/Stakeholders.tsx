@@ -109,38 +109,30 @@ export default function Stakeholders() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Stakeholders</h1>
-          <p className="text-muted-foreground text-sm mt-1">{stakeholders.length} contacts tracked</p>
+    <div className="space-y-4">
+      {/* Redesigned Single-Line Header & Filters */}
+      <div className="flex flex-wrap items-center gap-4 mb-4 bg-white p-3 rounded-2xl border border-slate-100 shadow-sm transition-all">
+        <div className="flex items-center gap-3 pr-4 border-r border-slate-100 h-9">
+          <h1 className="text-xl font-bold tracking-tight text-slate-900 whitespace-nowrap">Stakeholders</h1>
+          <span className="bg-slate-100 text-slate-600 px-2.5 py-0.5 rounded-full text-xs font-bold whitespace-nowrap">
+            {stakeholders.length}
+          </span>
         </div>
-        <Button onClick={() => setShowForm(true)} className="gap-2">
-          <Plus className="w-4 h-4" /> Add Stakeholder
-        </Button>
-      </div>
 
-      {error && (
-        <Alert variant="destructive" className="mb-6">
-          <AlertTitle>Something went wrong</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
+        <div className="relative flex-1 min-w-[200px]">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <Input
+            placeholder="Search stakeholders..."
+            value={search}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
+            className="pl-9 h-10 border-slate-200 bg-slate-50/50 focus:bg-white transition-all rounded-xl"
+          />
+        </div>
 
-      <Card className="border-0 shadow-sm mb-6">
-        <div className="p-4 flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder="Search by name, organization, or title..."
-              value={search}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
-              className="pl-9"
-            />
-          </div>
+        <div className="flex items-center gap-2 flex-wrap">
           <Select value={filterCategory} onValueChange={(v: string) => setFilterCategory(v)}>
-            <SelectTrigger className="w-full sm:w-44">
-              <Filter className="w-3.5 h-3.5 mr-2 text-muted-foreground" />
+            <SelectTrigger className="h-10 w-40 rounded-xl border-slate-200 bg-white text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+              <Filter className="w-3.5 h-3.5 mr-2 text-slate-400" />
               <SelectValue placeholder="Category" />
             </SelectTrigger>
             <SelectContent>
@@ -152,8 +144,9 @@ export default function Stakeholders() {
               ))}
             </SelectContent>
           </Select>
+
           <Select value={filterInfluence} onValueChange={(v: string) => setFilterInfluence(v)}>
-            <SelectTrigger className="w-full sm:w-40">
+            <SelectTrigger className="h-10 w-36 rounded-xl border-slate-200 bg-white text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors">
               <SelectValue placeholder="Influence" />
             </SelectTrigger>
             <SelectContent>
@@ -166,7 +159,23 @@ export default function Stakeholders() {
             </SelectContent>
           </Select>
         </div>
-      </Card>
+
+        <Button 
+          onClick={() => setShowForm(true)} 
+          className="h-10 px-5 gap-2 rounded-xl bg-sanku-orange hover:bg-sanku-orange/90 text-white font-bold shadow-lg shadow-sanku-orange/20 transition-all active:scale-95"
+        >
+          <Plus className="w-4 h-4" /> 
+          <span className="hidden sm:inline">Add Stakeholder</span>
+          <span className="sm:hidden">Add</span>
+        </Button>
+      </div>
+
+      {error && (
+        <Alert variant="destructive" className="mb-6">
+          <AlertTitle>Something went wrong</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
 
       {selectedIds.length > 0 && (
         <div className="mb-3 px-4 py-3 rounded-xl bg-primary/5 border border-primary/20 flex flex-wrap items-center gap-3">
@@ -252,7 +261,7 @@ export default function Stakeholders() {
       </Card>
 
       <Dialog open={showForm} onOpenChange={setShowForm}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" aria-describedby={undefined}>
           <DialogHeader>
             <DialogTitle>Add Stakeholder</DialogTitle>
           </DialogHeader>

@@ -160,13 +160,15 @@ export default function KPIs() {
   }
 
   return (
-    <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">2026 Key Performance Indicators</h1>
-          <p className="text-muted-foreground mt-1 text-sm">Track objectives, key results, progress, and status across all GR functions</p>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+        <div className="flex items-center gap-4">
+          <div className="pr-4 border-r border-slate-100">
+            <h1 className="text-xl font-bold tracking-tight text-slate-900 whitespace-nowrap">2026 KPIs</h1>
+            <p className="text-slate-500 text-[10px] uppercase font-bold tracking-wider mt-0.5 whitespace-nowrap">Performance Tracking</p>
+          </div>
         </div>
-        <Button size="sm" onClick={() => setAddKpiModal(true)} className="gap-1.5">
+        <Button size="sm" onClick={() => setAddKpiModal(true)} className="gap-1.5 h-9 rounded-xl bg-sanku-orange hover:bg-sanku-orange/90 text-white font-bold">
           <Plus className="w-4 h-4" /> Add KPI Group
         </Button>
       </div>
@@ -285,7 +287,7 @@ export default function KPIs() {
 
       {/* Add KPI Group Modal */}
       <Dialog open={addKpiModal} onOpenChange={setAddKpiModal}>
-        <DialogContent className="max-w-sm">
+        <DialogContent className="max-w-sm" aria-describedby={undefined}>
           <DialogHeader>
             <DialogTitle>Add KPI Group</DialogTitle>
           </DialogHeader>
@@ -311,7 +313,7 @@ function KRFormModal({ title, initial, onSave, onClose }) {
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl" aria-describedby={undefined}>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>

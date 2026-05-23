@@ -16,12 +16,24 @@ import InternalOps from "./pages/InternalOps";
 import Budget from "./pages/Budget";
 import Settings from "./pages/Settings";
 import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
+import VerifyEmail from "./pages/VerifyEmail";
 import ProtectedRoute from "./components/ProtectedRoute";
+import StandaloneTableDemo from "./pages/StandaloneTableDemo";
 
 const App: React.FC = () => {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<Signup />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/verify-email" element={<VerifyEmail />} />
+      
+      {/* Standalone Table Demo - No Layout */}
+      <Route path="/demo/standalone-table" element={<StandaloneTableDemo />} />
 
       <Route element={<ProtectedRoute />}>
         <Route element={<Layout />}>

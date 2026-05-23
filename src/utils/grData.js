@@ -29,13 +29,13 @@ export const initialProjects = [
     budgetKES: 1500000,
     spentKES: 450000,
     meetings: [
-      { date: "2025-11-10", title: "Initial Committee Briefing" }
+      { id: "m1", date: "2025-11-10", title: "Initial Committee Briefing" }
     ],
     followUps: [
-      { date: "2025-12-01", label: "Submit Memorandum" }
+      { id: "f1", date: "2025-12-01", label: "Submit Memorandum" }
     ],
     travel: [
-      { who: "Jane Doe", destination: "Nairobi", days: 2, perDiem: 5000, transport: 2000 }
+      { id: "t1", who: "Jane Doe", destination: "Nairobi", days: 2, perDiem: 5000, transport: 2000 }
     ],
     linkedPolicies: ["1"]
   },
@@ -69,11 +69,11 @@ export const initialProjects = [
     budgetKES: 1200000,
     spentKES: 600000,
     meetings: [
-      { date: "2025-11-15", title: "County Health Dept Meeting" }
+      { id: "m2", date: "2025-11-15", title: "County Health Dept Meeting" }
     ],
     followUps: [],
     travel: [
-      { who: "Sarah Omari", destination: "Nakuru", days: 3, perDiem: 6000, transport: 8000 }
+      { id: "t2", who: "Sarah Omari", destination: "Nakuru", days: 3, perDiem: 6000, transport: 8000 }
     ],
     linkedPolicies: ["3"]
   }

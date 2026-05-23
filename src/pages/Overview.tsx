@@ -1,15 +1,14 @@
 import { Link } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
 import logo from "../assets/logo.png";
 import { appModules } from "@/config/modules";
 
 export default function Overview() {
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="mb-12 flex flex-col items-center text-center">
-        <img src={logo} alt="Sanku Logo" className="h-16 w-auto mb-6" />
-        <h1 className="text-4xl font-bold tracking-tight text-slate-900">About Sanku GR</h1>
-        <p className="text-lg text-muted-foreground mt-4 max-w-2xl leading-relaxed">
+    <div className="space-y-4 max-w-5xl mx-auto">
+      <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col items-center text-center">
+        <img src={logo} alt="Sanku Logo" className="h-12 w-auto mb-4" />
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 whitespace-nowrap">About</h1>
+        <p className="text-sm text-muted-foreground mt-2 max-w-xl leading-relaxed">
           The Government Relations (GR) Command Centre for Sanku Kenya. 
           A specialized platform designed to track, manage, and optimize our institutional relationships 
           and advocacy impact.

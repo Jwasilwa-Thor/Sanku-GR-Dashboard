@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, Fragment } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { parseISO, differenceInDays, format, startOfMonth, endOfMonth, eachMonthOfInterval } from "date-fns";
-import { CalendarDays, DollarSign, TableIcon, Plus, Pencil, Trash2, ChevronDown, ChevronRight, Plane, FileText, Users, Handshake, Target, Clock, AlertCircle, Search, MapPin, UserCircle } from "lucide-react";
+import { CalendarDays, DollarSign, Table2, Plus, Pencil, Trash2, ChevronDown, ChevronRight, Plane, FileText, Users, Handshake, Target, Clock, AlertCircle, Search, MapPin, UserCircle } from "lucide-react";
 import { crmClient } from "@/api/crmClient";
 import { budgetLines, fmtKES } from "@/utils/grData";
 import { toast } from "sonner";
@@ -79,93 +79,104 @@ function TableView({ items, stakeholders, policies, onEdit, onDelete }) {
   const toggle = (id) => setExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
 
   return (
-    <div className="rounded-xl border bg-card shadow-sm overflow-x-auto">
-      <table className="w-full text-xs min-w-[900px]">
+    <div className="futuristic-table-container overflow-x-auto">
+      <table className="futuristic-table min-w-[1000px]">
         <thead>
-          <tr className="border-b bg-muted/60">
-            <th className="px-4 py-3 text-left font-semibold text-muted-foreground min-w-[200px]">Project</th>
-            <th className="px-4 py-3 text-left font-semibold text-muted-foreground w-28">Category</th>
-            <th className="px-4 py-3 text-left font-semibold text-muted-foreground w-24">Status</th>
-            <th className="px-4 py-3 text-left font-semibold text-muted-foreground w-28">Owner</th>
-            <th className="px-4 py-3 text-left font-semibold text-muted-foreground w-24">Start</th>
-            <th className="px-4 py-3 text-left font-semibold text-muted-foreground w-24">End</th>
-            <th className="px-4 py-3 text-right font-semibold text-muted-foreground w-32">Budget (KES)</th>
-            <th className="px-4 py-3 text-right font-semibold text-muted-foreground w-28">Spent</th>
-            <th className="px-4 py-3 text-center font-semibold text-muted-foreground w-20">Used</th>
-            <th className="w-16 px-2"></th>
+          <tr>
+            <th>Project</th>
+            <th className="w-28">Category</th>
+            <th className="w-24">Status</th>
+            <th className="w-28">Owner</th>
+            <th className="w-28">Timeline</th>
+            <th className="w-32 text-right">Budget (KES)</th>
+            <th className="w-28 text-right">Spent</th>
+            <th className="w-20 text-center">Used</th>
+            <th className="w-16"></th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-border">
+        <tbody>
           {items.map((p) => {
             const pct = p.budgetKES > 0 ? Math.round((p.spentKES / p.budgetKES) * 100) : 0;
-            const travelCost = (p.travel || []).reduce((s, r) => s + Number(r.days) * Number(r.perDiem) + Number(r.transport), 0);
             const linkedPols = (p.linkedPolicies || []).map((pid) => policies.find((pl) => pl.id === pid)).filter(Boolean);
             return (
-              <>
-                <tr key={p.id} className="hover:bg-muted/20 transition-colors cursor-pointer" onClick={() => toggle(p.id)}>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-1.5">
-                      {expanded[p.id] ? <ChevronDown className="w-3.5 h-3.5 text-muted-foreground shrink-0" /> : <ChevronRight className="w-3.5 h-3.5 text-muted-foreground shrink-0" />}
+              <Fragment key={p.id}>
+                <tr className="cursor-pointer group" onClick={() => toggle(p.id)}>
+                  <td>
+                    <div className="glow-accent" />
+                    <div className="flex items-center gap-2">
+                      {expanded[p.id] ? <ChevronDown className="w-4 h-4 text-sanku-orange" /> : <ChevronRight className="w-4 h-4 text-slate-400" />}
                       <div>
-                        <p className="font-medium text-foreground leading-snug">{p.name}</p>
-                        <p className="text-muted-foreground text-[11px] mt-0.5 line-clamp-1">{p.description}</p>
+                        <p className="font-bold text-slate-900 leading-tight">{p.name}</p>
+                        <p className="text-slate-500 text-[10px] uppercase tracking-wider mt-0.5 line-clamp-1">{p.description}</p>
                       </div>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-muted-foreground">{p.category}</td>
-                  <td className="px-4 py-3">
-                    <span className={`px-2 py-0.5 rounded-full text-[11px] font-medium ${statusColors[p.status] || "bg-muted text-muted-foreground"}`}>{p.status}</span>
+                  <td className="text-slate-600 font-medium">{p.category}</td>
+                  <td>
+                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${statusColors[p.status] || "bg-slate-100 text-slate-500"}`}>{p.status}</span>
                   </td>
-                  <td className="px-4 py-3 text-muted-foreground">{p.owner}</td>
-                  <td className="px-4 py-3 text-muted-foreground">{format(parseISO(p.start), "d MMM yy")}</td>
-                  <td className="px-4 py-3 text-muted-foreground">{format(parseISO(p.end), "d MMM yy")}</td>
-                  <td className="px-4 py-3 text-right text-muted-foreground">{p.budgetKES.toLocaleString()}</td>
-                  <td className="px-4 py-3 text-right text-muted-foreground">{p.spentKES.toLocaleString()}</td>
-                  <td className="px-4 py-3 text-center">
-                    <span className={`text-[11px] font-semibold ${pct > 85 ? "text-destructive" : pct > 65 ? "text-chart-3" : "text-chart-2"}`}>{pct}%</span>
+                  <td className="text-slate-600">{p.owner}</td>
+                  <td className="text-slate-500 text-[11px] font-medium leading-tight">
+                    {format(parseISO(p.start), "MMM d")} -<br />
+                    {format(parseISO(p.end), "MMM d, yy")}
                   </td>
-                  <td className="px-2 py-2" onClick={(e) => e.stopPropagation()}>
-                    <div className="flex items-center gap-1 justify-end">
-                      <button onClick={() => onEdit(p)} className="p-1 rounded hover:bg-accent/10 hover:text-accent text-muted-foreground transition-colors"><Pencil className="w-3.5 h-3.5" /></button>
-                      <button onClick={() => onDelete(p.id)} className="p-1 rounded hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>
+                  <td className="text-right font-mono text-slate-700 font-bold tabular-nums">{p.budgetKES.toLocaleString()}</td>
+                  <td className="text-right font-mono text-slate-600 tabular-nums">{p.spentKES.toLocaleString()}</td>
+                  <td className="text-center">
+                    <div className="flex flex-col items-center gap-1">
+                      <span className={`text-[11px] font-black ${pct > 85 ? "text-destructive" : pct > 65 ? "text-sanku-orange" : "text-emerald-600"}`}>{pct}%</span>
+                      <div className="w-12 h-1 bg-slate-100 rounded-full overflow-hidden">
+                        <div className={`h-full transition-all duration-1000 ${pct > 85 ? "bg-destructive" : pct > 65 ? "bg-sanku-orange" : "bg-emerald-500"}`} style={{ width: `${Math.min(100, pct)}%` }} />
+                      </div>
+                    </div>
+                  </td>
+                  <td onClick={(e) => e.stopPropagation()}>
+                    <div className="flex items-center gap-1 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button onClick={() => onEdit(p)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-sanku-orange transition-colors"><Pencil className="w-4 h-4" /></button>
+                      <button onClick={() => onDelete(p.id)} className="p-1.5 rounded-lg hover:bg-destructive/10 text-slate-400 hover:text-destructive transition-colors"><Trash2 className="w-4 h-4" /></button>
                     </div>
                   </td>
                 </tr>
                 {expanded[p.id] && (
-                  <tr key={p.id + "-exp"} className="bg-muted/30">
-                    <td colSpan={10} className="px-6 py-4">
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-xs">
-                        <div>
-                          <p className="font-semibold text-foreground mb-2 flex items-center gap-1"><FileText className="w-3.5 h-3.5" /> Linked Policies</p>
-                          {linkedPols.length === 0 ? <p className="text-muted-foreground italic">None linked</p> :
-                            <ul className="space-y-1">{linkedPols.map((pl) => <li key={pl.id} className="text-muted-foreground">· {pl.title}</li>)}</ul>}
-                        </div>
-                        <div>
-                          <p className="font-semibold text-foreground mb-2 flex items-center gap-1"><Plane className="w-3.5 h-3.5" /> Travel / Per Diem</p>
-                          {(p.travel || []).length === 0 ? <p className="text-muted-foreground italic">No travel logged</p> :
-                            <ul className="space-y-1">{(p.travel || []).map((t, i) => (
-                              <li key={i} className="text-muted-foreground">{t.who} → {t.destination} ({t.days}d, {fmtKES(Number(t.days) * Number(t.perDiem) + Number(t.transport))})</li>
-                            ))}</ul>}
-                          {(p.travel || []).length > 0 && (
-                            <p className="mt-1 font-semibold text-foreground">Total: {fmtKES((p.travel || []).reduce((s, r) => s + Number(r.days) * Number(r.perDiem) + Number(r.transport), 0))}</p>
-                          )}
-                        </div>
-                        <div>
-                          <p className="font-semibold text-foreground mb-2">Budget Line: {p.budgetLine}</p>
-                          <div className="space-y-1 text-muted-foreground">
-                            <p>Budget: <span className="font-medium text-foreground">{fmtKES(p.budgetKES)}</span></p>
-                            <p>Spent: <span className="font-medium text-foreground">{fmtKES(p.spentKES)}</span></p>
-                            <p>Remaining: <span className={`font-medium ${p.budgetKES - p.spentKES < 0 ? "text-destructive" : "text-chart-2"}`}>{fmtKES(p.budgetKES - p.spentKES)}</span></p>
+                  <tr className="bg-slate-50/80 backdrop-blur-sm">
+                    <td colSpan={9} className="p-0">
+                      <div className="px-12 py-6 border-l-2 border-sanku-orange/30 animate-in fade-in slide-in-from-left-2 duration-300">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 text-xs">
+                          <div>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3 flex items-center gap-1.5"><FileText className="w-3.5 h-3.5" /> Linked Policies</p>
+                            {linkedPols.length === 0 ? <p className="text-slate-400 italic">No associated policy initiatives</p> :
+                              <div className="flex flex-wrap gap-2">{linkedPols.map((pl) => <Badge key={pl.id} variant="outline" className="bg-white/80 border-slate-200 text-slate-600">{pl.title}</Badge>)}</div>}
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3 flex items-center gap-1.5"><Plane className="w-3.5 h-3.5" /> Logistics & Travel</p>
+                            {(p.travel || []).length === 0 ? <p className="text-slate-400 italic">No travel records logged</p> :
+                              <ul className="space-y-2">{(p.travel || []).map((t, i) => (
+                                <li key={i} className="text-slate-600 flex items-center justify-between border-b border-slate-200/50 pb-1 last:border-0">
+                                  <span>{t.who} → {t.destination}</span>
+                                  <span className="font-mono font-bold text-[10px]">{fmtKES(Number(t.days) * Number(t.perDiem) + Number(t.transport))}</span>
+                                </li>
+                              ))}</ul>}
+                          </div>
+                          <div className="bg-white/60 p-4 rounded-xl border border-slate-200/50">
+                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Financial Overview</p>
+                            <div className="space-y-2">
+                              <div className="flex justify-between"><span className="text-slate-500">Allocation</span><span className="font-mono font-bold text-slate-900">{fmtKES(p.budgetKES)}</span></div>
+                              <div className="flex justify-between"><span className="text-slate-500">Utilization</span><span className="font-mono font-bold text-slate-900">{fmtKES(p.spentKES)}</span></div>
+                              <div className="pt-2 mt-2 border-t border-slate-200 flex justify-between">
+                                <span className="font-bold text-slate-900">Remaining</span>
+                                <span className={`font-mono font-black ${p.budgetKES - p.spentKES < 0 ? "text-destructive" : "text-emerald-600"}`}>{fmtKES(p.budgetKES - p.spentKES)}</span>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
                     </td>
                   </tr>
                 )}
-              </>
+              </Fragment>
             );
           })}
-          {items.length === 0 && <tr><td colSpan={10} className="px-4 py-8 text-center text-muted-foreground">No projects match the selected filters.</td></tr>}
+          {items.length === 0 && <tr><td colSpan={9} className="px-4 py-12 text-center text-slate-400 font-medium">No projects matching your current filters were found.</td></tr>}
         </tbody>
       </table>
     </div>
@@ -256,73 +267,117 @@ function GanttView({ items }) {
 // ─── Project Modal ─────────────────────────────────────────────────────────────
 function ProjectModal({ initial, policies, stakeholders, onSave, onClose }) {
   const [form, setForm] = useState({ ...initial });
+  const [budgets, setBudgets] = useState([]);
+  const [links, setLinks] = useState([]);
+  
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+
+  useEffect(() => {
+    crmClient.entities.Budget.list().then(setBudgets);
+  }, []);
+
+  useEffect(() => {
+    if (initial.id) {
+      // Find all budget links for this project
+      const allLinks = budgets.flatMap(b => (b.links || []).filter(l => l.projectId === initial.id));
+      setLinks(allLinks);
+    }
+  }, [budgets, initial.id]);
 
   function togglePolicy(pid) {
     const current = form.linkedPolicies || [];
     set("linkedPolicies", current.includes(pid) ? current.filter((x) => x !== pid) : [...current, pid]);
   }
 
+  const totalAllocated = links.reduce((s, l) => s + l.allocatedAmount, 0);
+
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" aria-describedby={undefined}>
         <DialogHeader><DialogTitle>{initial.id ? "Edit Project" : "Add Project"}</DialogTitle></DialogHeader>
-        <div className="space-y-3 mt-2">
-          <div><Label className="text-xs mb-1 block">Project Name</Label><Input value={form.name} onChange={(e) => set("name", e.target.value)} /></div>
-          <div>
-            <Label className="text-xs mb-1 block">Description</Label>
-            <textarea value={form.description} onChange={(e) => set("description", e.target.value)} rows={2} className="w-full border rounded-md px-3 py-2 text-sm bg-background resize-none focus:outline-none focus:ring-2 focus:ring-ring" />
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div>
-              <Label className="text-xs mb-1 block">Category</Label>
-              <select value={form.category} onChange={(e) => set("category", e.target.value)} className="w-full border rounded-md px-3 py-2 text-sm bg-background">
-                {["Policy","Engagement","Advocacy","Research","Operations"].map((c) => <option key={c}>{c}</option>)}
-              </select>
+        <div className="space-y-4 mt-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-3">
+              <div><Label className="text-xs mb-1 block">Project Name</Label><Input value={form.name} onChange={(e) => set("name", e.target.value)} /></div>
+              <div>
+                <Label className="text-xs mb-1 block">Description</Label>
+                <textarea value={form.description} onChange={(e) => set("description", e.target.value)} rows={2} className="w-full border rounded-md px-3 py-2 text-sm bg-background resize-none focus:outline-none focus:ring-2 focus:ring-ring" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-xs mb-1 block">Category</Label>
+                  <select value={form.category} onChange={(e) => set("category", e.target.value)} className="w-full border rounded-md px-3 py-2 text-sm bg-background">
+                    {["Policy","Engagement","Advocacy","Research","Operations"].map((c) => <option key={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <Label className="text-xs mb-1 block">Status</Label>
+                  <select value={form.status} onChange={(e) => set("status", e.target.value)} className="w-full border rounded-md px-3 py-2 text-sm bg-background">
+                    {["Active","Planning","Completed","On Hold"].map((s) => <option key={s}>{s}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div><Label className="text-xs mb-1 block">Owner</Label><Input value={form.owner} onChange={(e) => set("owner", e.target.value)} /></div>
+                <div><Label className="text-xs mb-1 block">Budget (Total KES)</Label><Input type="number" value={form.budgetKES} onChange={(e) => set("budgetKES", Number(e.target.value))} /></div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div><Label className="text-xs mb-1 block">Start Date</Label><Input type="date" value={form.start} onChange={(e) => set("start", e.target.value)} /></div>
+                <div><Label className="text-xs mb-1 block">End Date</Label><Input type="date" value={form.end} onChange={(e) => set("end", e.target.value)} /></div>
+              </div>
             </div>
-            <div>
-              <Label className="text-xs mb-1 block">Status</Label>
-              <select value={form.status} onChange={(e) => set("status", e.target.value)} className="w-full border rounded-md px-3 py-2 text-sm bg-background">
-                {["Active","Planning","Completed","On Hold"].map((s) => <option key={s}>{s}</option>)}
-              </select>
+
+            <div className="space-y-4">
+              <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3 flex items-center gap-1.5"><DollarSign className="w-3.5 h-3.5" /> Budget Integration</p>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-slate-500">Allocated via System</span>
+                    <span className="text-xs font-bold text-slate-900">{totalAllocated.toLocaleString()} KES</span>
+                  </div>
+                  <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                    <div className="h-full bg-emerald-500" style={{ width: `${Math.min(100, (totalAllocated / form.budgetKES) * 100)}%` }} />
+                  </div>
+                  <p className="text-[9px] text-slate-400 italic mt-1">* Budget linkages are managed in the Budget Oversight module.</p>
+                </div>
+
+                {links.length > 0 && (
+                  <div className="mt-4 space-y-2">
+                    {links.map(l => {
+                      const b = budgets.find(x => x.id === l.budgetId);
+                      return (
+                        <div key={l.id} className="flex items-center justify-between bg-white px-3 py-2 rounded-lg border text-[10px]">
+                          <span className="font-bold text-slate-700">{b?.lineItem}</span>
+                          <span className="font-mono">{l.allocatedAmount.toLocaleString()}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <Label className="text-xs mb-2 block flex items-center gap-1.5"><FileText className="w-3.5 h-3.5" /> Link Policy Initiatives</Label>
+                <div className="flex flex-wrap gap-2">
+                  {policies.map((pl) => {
+                    const checked = (form.linkedPolicies || []).includes(pl.id);
+                    return (
+                      <button key={pl.id} onClick={() => togglePolicy(pl.id)}
+                        className={`px-2.5 py-1 rounded-full text-[10px] border transition-colors ${checked ? "bg-slate-900 text-white border-slate-900" : "bg-white text-slate-500 border-slate-200 hover:border-slate-900"}`}>
+                        {pl.title}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
-            <div><Label className="text-xs mb-1 block">Owner</Label><Input value={form.owner} onChange={(e) => set("owner", e.target.value)} /></div>
-            <div>
-              <Label className="text-xs mb-1 block">Budget Line</Label>
-              <select value={form.budgetLine} onChange={(e) => set("budgetLine", e.target.value)} className="w-full border rounded-md px-3 py-2 text-sm bg-background">
-                {budgetLines.map((b) => <option key={b}>{b}</option>)}
-              </select>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div><Label className="text-xs mb-1 block">Start Date</Label><Input type="date" value={form.start} onChange={(e) => set("start", e.target.value)} /></div>
-            <div><Label className="text-xs mb-1 block">End Date</Label><Input type="date" value={form.end} onChange={(e) => set("end", e.target.value)} /></div>
-            <div><Label className="text-xs mb-1 block">Budget (KES)</Label><Input type="number" value={form.budgetKES} onChange={(e) => set("budgetKES", Number(e.target.value))} /></div>
-            <div><Label className="text-xs mb-1 block">Spent (KES)</Label><Input type="number" value={form.spentKES} onChange={(e) => set("spentKES", Number(e.target.value))} /></div>
           </div>
 
-          {/* Policy Links */}
-          <div>
-            <Label className="text-xs mb-2 block flex items-center gap-1.5"><FileText className="w-3.5 h-3.5" /> Link Policy Initiatives</Label>
-            <div className="flex flex-wrap gap-2">
-              {policies.map((pl) => {
-                const checked = (form.linkedPolicies || []).includes(pl.id);
-                return (
-                  <button key={pl.id} onClick={() => togglePolicy(pl.id)}
-                    className={`px-2.5 py-1 rounded-full text-xs border transition-colors ${checked ? "bg-primary text-primary-foreground border-primary" : "bg-background text-muted-foreground border-border hover:border-primary"}`}>
-                    {pl.title}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Travel */}
           <TravelTable rows={form.travel || []} onChange={(v) => set("travel", v)} />
 
-          <div className="flex gap-2 justify-end pt-2">
-            <Button variant="outline" size="sm" onClick={onClose}>Cancel</Button>
-            <Button size="sm" onClick={() => onSave(form)}>Save</Button>
+          <div className="flex gap-2 justify-end pt-4 border-t">
+            <Button variant="outline" size="sm" onClick={onClose} className="rounded-xl">Cancel</Button>
+            <Button size="sm" onClick={() => onSave(form)} className="bg-sanku-orange hover:bg-sanku-orange/90 text-white font-bold rounded-xl px-6">Save Project</Button>
           </div>
         </div>
       </DialogContent>
@@ -402,19 +457,21 @@ export default function ActivityProjects() {
   const totalSpent = projects.reduce((s, p) => s + p.spentKES, 0);
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Activity &amp; Projects</h1>
-          <p className="text-muted-foreground mt-1 text-sm">Initiatives, timelines, travel expenditure, and policy links</p>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+        <div className="flex items-center gap-4">
+          <div className="pr-4 border-r border-slate-100">
+            <h1 className="text-xl font-bold tracking-tight text-slate-900 whitespace-nowrap">Activity &amp; Projects</h1>
+            <p className="text-slate-500 text-[10px] uppercase font-bold tracking-wider mt-0.5 whitespace-nowrap">Portfolio Management</p>
+          </div>
         </div>
-        <Button size="sm" className="gap-1.5" onClick={() => setModal({ data: { ...emptyProject } })}>
+        <Button size="sm" className="gap-1.5 h-9 rounded-xl bg-sanku-orange hover:bg-sanku-orange/90 text-white font-bold" onClick={() => setModal({ data: { ...emptyProject } })}>
           <Plus className="w-4 h-4" /> Add Project
         </Button>
       </div>
 
       {/* Summary cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
         {[
           { label: "Total Projects", value: projects.length, color: "text-primary" },
           { label: "Total Budget", value: fmtKES(totalBudget), color: "text-foreground" },
@@ -447,24 +504,11 @@ export default function ActivityProjects() {
             ))}
           </div>
         </div>
-        <div className="flex gap-1 bg-secondary rounded-lg p-1">
-          <button onClick={() => setView("table")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${view === "table" ? "bg-card shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}>
-            <TableIcon className="w-3.5 h-3.5" /> Table
-          </button>
-          <button onClick={() => setView("gantt")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${view === "gantt" ? "bg-card shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}>
-            <CalendarDays className="w-3.5 h-3.5" /> Gantt
-          </button>
-        </div>
       </div>
 
-      {view === "table" && (
-        <TableView items={filtered} stakeholders={stakeholders} policies={policies}
-          onEdit={(p) => setModal({ data: { ...p } })}
-          onDelete={handleDeleteProject} />
-      )}
-      {view === "gantt" && <GanttView items={filtered} />}
+      <TableView items={filtered} stakeholders={stakeholders} policies={policies}
+        onEdit={(p) => setModal({ data: { ...p } })}
+        onDelete={handleDeleteProject} />
 
       {modal && (
         <ProjectModal

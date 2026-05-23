@@ -86,3 +86,41 @@
     @apply bg-background text-foreground font-inter;
   }
 }
+
+@layer components {
+  .futuristic-table-container {
+    @apply w-full overflow-hidden rounded-2xl border border-slate-200/60 bg-white/50 backdrop-blur-sm shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-500 hover:shadow-[0_8px_30px_rgba(255,107,0,0.08)] hover:border-sanku-orange/20;
+  }
+
+  .futuristic-table {
+    @apply w-full border-collapse text-sm;
+  }
+
+  .futuristic-table thead tr {
+    @apply border-b bg-slate-50/50 backdrop-blur-md;
+  }
+
+  .futuristic-table th {
+    @apply px-6 py-4 text-left text-[11px] font-bold uppercase tracking-widest text-slate-500;
+  }
+
+  .futuristic-table tbody tr {
+    @apply border-b border-slate-100/60 transition-all duration-300 hover:bg-slate-50/80 hover:scale-[1.002] hover:z-10 relative;
+  }
+
+  .futuristic-table td {
+    @apply px-6 py-4 align-middle transition-all duration-300;
+  }
+
+  .mono-number {
+    @apply font-mono tracking-tighter tabular-nums;
+  }
+
+  .glow-accent {
+    @apply absolute left-0 top-0 bottom-0 w-1 bg-sanku-orange scale-y-0 transition-transform duration-300 origin-center;
+  }
+
+  tr:hover .glow-accent {
+    @apply scale-y-100;
+  }
+}

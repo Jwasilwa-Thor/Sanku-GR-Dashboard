@@ -34,7 +34,7 @@ async function main() {
   console.log(`Creating database: ${databaseName}`);
   const { database } = await client.databases.createIfNotExists({ id: databaseName });
 
-  const containers = ["Policies", "Stakeholders", "Projects", "Engagements", "Partners", "KPIs", "Meetings", "Processes"];
+  const containers = ["Users", "Policies", "Stakeholders", "Projects", "Engagements", "Partners", "KPIs", "Meetings", "Processes"];
   
   for (const containerId of containers) {
     console.log(`Creating container: ${containerId} (Partition Key: /id)`);

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { Plus, Pencil, Trash2, ChevronDown, ChevronRight, Users, AlertCircle, Clock, CheckCircle2, FileText, Target, MapPin, Search, DollarSign, TableIcon, LayoutDashboard } from "lucide-react";
+import { Plus, Pencil, Trash2, ChevronDown, ChevronRight, Users, AlertCircle, Clock, CheckCircle2, FileText, Target, MapPin, Search, DollarSign, Table2, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -123,136 +123,98 @@ export default function PolicyAdvocacy() {
   if (loading) return <div className="flex items-center justify-center h-screen animate-pulse">Loading Pipeline...</div>;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Policy Pipeline</h1>
-          <p className="text-muted-foreground mt-1 text-sm">Monitoring to decision workflow tracking</p>
-        </div>
-        <div className="flex gap-3">
-          <div className="flex gap-1 bg-secondary rounded-lg p-1 mr-2">
-            <button onClick={() => setView("table")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${view === "table" ? "bg-card shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}>
-              <TableIcon className="w-3.5 h-3.5" /> Table
-            </button>
-            <button onClick={() => setView("pipeline")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${view === "pipeline" ? "bg-card shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}>
-              <LayoutDashboard className="w-3.5 h-3.5" /> Pipeline
-            </button>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+        <div className="flex items-center gap-4">
+          <div className="pr-4 border-r border-slate-100">
+            <h1 className="text-xl font-bold tracking-tight text-slate-900 whitespace-nowrap">Policy Pipeline</h1>
+            <p className="text-slate-500 text-[10px] uppercase font-bold tracking-wider mt-0.5 whitespace-nowrap">Advocacy Tracking</p>
           </div>
+        </div>
+        <div className="flex items-center gap-3">
           <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 h-4 h-4 text-muted-foreground" />
+            <Search className="absolute left-2.5 top-2.5 w-4 h-4 text-slate-400" />
             <Input 
-              placeholder="Search matters..." 
-              className="pl-9 h-9 w-64 text-sm" 
+              placeholder="Search..." 
+              className="pl-9 h-9 w-40 lg:w-48 text-xs rounded-xl border-slate-200 bg-slate-50/50" 
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
             />
           </div>
-          <Button size="sm" className="gap-1.5" onClick={() => setModal({ mode: "add", data: { ...emptyPolicy } })}>
+          <Button size="sm" className="h-9 px-4 gap-1.5 rounded-xl bg-sanku-orange hover:bg-sanku-orange/90 text-white font-bold" onClick={() => setModal({ mode: "add", data: { ...emptyPolicy } })}>
             <Plus className="w-4 h-4" /> New Matter
           </Button>
         </div>
       </div>
 
-      {/* Content View */}
-      {view === "pipeline" ? (
-        <div className="flex gap-4 overflow-x-auto pb-8 min-h-[600px]">
-          {STAGES.map(stage => (
-            <div key={stage} className="flex-1 min-w-[280px] bg-muted/30 rounded-xl p-3 border border-border/50">
-              <div className="flex items-center justify-between mb-4 px-1">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                  <div className={`w-2 h-2 rounded-full border-2 ${stageColors[stage].split(' ')[0]}`} />
-                  {stage}
-                  <span className="ml-1 text-[10px] bg-muted px-1.5 py-0.5 rounded-full">
-                    {filtered.filter(p => p.stage === stage).length}
-                  </span>
-                </h3>
-              </div>
-              
-              <div className="space-y-3">
-                {filtered.filter(p => p.stage === stage).map(policy => (
-                  <MatterCard 
-                    key={policy.id} 
-                    policy={policy} 
-                    onClick={() => setDetailItem(policy)}
-                    onEdit={() => setModal({ mode: "edit", data: { ...policy } })}
-                  />
-                ))}
-                {filtered.filter(p => p.stage === stage).length === 0 && (
-                  <div className="text-[11px] text-muted-foreground text-center py-8 border-2 border-dashed rounded-lg opacity-50">
-                    No matters in {stage}
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="border-b bg-muted/60">
-                <th className="px-4 py-3 text-left font-semibold text-muted-foreground">Title</th>
-                <th className="px-4 py-3 text-left font-semibold text-muted-foreground">Stage</th>
-                <th className="px-4 py-3 text-left font-semibold text-muted-foreground">Priority</th>
-                <th className="px-4 py-3 text-left font-semibold text-muted-foreground">Ministry</th>
-                <th className="px-4 py-3 text-left font-semibold text-muted-foreground">Deadline</th>
-                <th className="px-4 py-3 text-right font-semibold text-muted-foreground">Budget</th>
-                <th className="w-16"></th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {filtered.map(p => {
-                const linkedProjects = projects.filter(proj => (proj.linkedPolicies || []).includes(p.id));
-                const totalSpent = linkedProjects.reduce((s, proj) => s + proj.spentKES, 0);
-                const isOverdue = p.deadline && new Date(p.deadline) < new Date() && p.stage !== "Closed";
+      <div className="futuristic-table-container overflow-x-auto">
+        <table className="futuristic-table min-w-[1000px]">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th className="w-32">Stage</th>
+              <th className="w-28">Priority</th>
+              <th className="w-48">Ministry</th>
+              <th className="w-32">Deadline</th>
+              <th className="w-32 text-right">Budget Utilization</th>
+              <th className="w-16"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map(p => {
+              const linkedProjects = projects.filter(proj => (proj.linkedPolicies || []).includes(p.id));
+              const totalSpent = linkedProjects.reduce((s, proj) => s + proj.spentKES, 0);
+              const isOverdue = p.deadline && new Date(p.deadline) < new Date() && p.stage !== "Closed";
 
-                return (
-                  <tr key={p.id} className="hover:bg-muted/20 transition-colors cursor-pointer" onClick={() => setDetailItem(p)}>
-                    <td className="px-4 py-3 font-medium">
-                      <div className="flex flex-col">
-                        <span>{p.title}</span>
-                        <span className="text-[10px] text-muted-foreground uppercase">{p.type}</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${stageColors[p.stage]}`}>
-                        {p.stage}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${priorityColors[p.priority]}`}>
-                        {p.priority}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground">{p.ministry}</td>
-                    <td className="px-4 py-3">
-                      <div className={`flex items-center gap-1.5 ${isOverdue ? 'text-destructive font-bold' : 'text-muted-foreground'}`}>
-                        {p.deadline ? new Date(p.deadline).toLocaleDateString() : '—'}
-                        {isOverdue && <AlertCircle className="w-3 h-3" />}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-right font-medium">
-                      {totalSpent > 0 ? fmtKES(totalSpent) : <span className="text-muted-foreground/40">—</span>}
-                    </td>
-                    <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
-                      <div className="flex justify-end gap-1">
-                        <button onClick={() => setModal({ mode: "edit", data: { ...p } })} className="p-1 rounded hover:bg-accent/10">
-                          <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
-                        </button>
-                        <button onClick={() => { if(confirm("Delete matter?")) crmClient.entities.Policy.delete(p.id).then(fetchData) }} className="p-1 rounded hover:bg-destructive/10">
-                          <Trash2 className="w-3.5 h-3.5 text-muted-foreground hover:text-destructive" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      )}
+              return (
+                <tr key={p.id} className="cursor-pointer group" onClick={() => setDetailItem(p)}>
+                  <td>
+                    <div className="glow-accent" />
+                    <div className="flex flex-col">
+                      <span className="font-bold text-slate-900 leading-tight">{p.title}</span>
+                      <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest mt-0.5">{p.type}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${stageColors[p.stage]}`}>
+                      {p.stage}
+                    </span>
+                  </td>
+                  <td>
+                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${priorityColors[p.priority]}`}>
+                      {p.priority}
+                    </span>
+                  </td>
+                  <td className="text-slate-600 font-medium">{p.ministry}</td>
+                  <td>
+                    <div className={`flex items-center gap-1.5 text-[11px] font-bold ${isOverdue ? 'text-destructive' : 'text-slate-500'}`}>
+                      {p.deadline ? new Date(p.deadline).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: '2y' }) : '—'}
+                      {isOverdue && <AlertCircle className="w-3 h-3 animate-pulse" />}
+                    </div>
+                  </td>
+                  <td className="text-right">
+                    {totalSpent > 0 ? (
+                      <span className="font-mono text-slate-700 font-bold tabular-nums">{totalSpent.toLocaleString()}</span>
+                    ) : (
+                      <span className="text-slate-300 font-mono text-[10px]">---</span>
+                    )}
+                  </td>
+                  <td onClick={e => e.stopPropagation()}>
+                    <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button onClick={() => setModal({ mode: "edit", data: { ...p } })} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-sanku-orange transition-colors">
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                      <button onClick={() => { if(confirm("Delete matter?")) crmClient.entities.Policy.delete(p.id).then(fetchData) }} className="p-1.5 rounded-lg hover:bg-destructive/10 text-slate-400 hover:text-destructive transition-colors">
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
 
       {/* Detail Panel Modal */}
       {detailItem && (

@@ -46,13 +46,15 @@ export default function GRMandate() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">GR Mandate &amp; Mission</h1>
-          <p className="text-muted-foreground mt-1 text-sm">Our guiding mandate, objectives, purpose, mission and vision</p>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+        <div className="flex items-center gap-4">
+          <div className="pr-4 border-r border-slate-100">
+            <h1 className="text-xl font-bold tracking-tight text-slate-900 whitespace-nowrap">GR Mandate &amp; Mission</h1>
+            <p className="text-slate-500 text-[10px] uppercase font-bold tracking-wider mt-0.5 whitespace-nowrap">Strategic Framework</p>
+          </div>
         </div>
-        <Button size="sm" className="gap-1.5" onClick={() => setModal({ mode: "add", data: { ...emptySection } })}>
+        <Button size="sm" className="gap-1.5 h-9 rounded-xl bg-sanku-orange hover:bg-sanku-orange/90 text-white font-bold" onClick={() => setModal({ mode: "add", data: { ...emptySection } })}>
           <Plus className="w-4 h-4" /> Add Section
         </Button>
       </div>
@@ -156,7 +158,7 @@ function SectionModal({ title, initial, onSave, onClose }) {
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-xl" aria-describedby={undefined}>
         <DialogHeader><DialogTitle>{title}</DialogTitle></DialogHeader>
         <div className="space-y-3 mt-2">
           <div className="grid grid-cols-2 gap-3">

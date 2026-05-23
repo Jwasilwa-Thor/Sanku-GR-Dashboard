@@ -8,10 +8,15 @@ import { Bell, Shield, User, Globe, Mail } from "lucide-react";
 
 const Settings = () => {
   return (
-    <div className="space-y-6 max-w-4xl mx-auto pb-10">
-      <div className="flex items-center justify-between mb-2">
-        <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
-        <Button className="bg-sanku-orange hover:bg-sanku-orange/90">Save Changes</Button>
+    <div className="space-y-4 max-w-4xl mx-auto">
+      <div className="flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+        <div className="flex items-center gap-4">
+          <div className="pr-4 border-r border-slate-100">
+            <h1 className="text-xl font-bold tracking-tight text-slate-900 whitespace-nowrap">Settings</h1>
+            <p className="text-slate-500 text-[10px] uppercase font-bold tracking-wider mt-0.5 whitespace-nowrap">System Preferences</p>
+          </div>
+        </div>
+        <Button className="bg-sanku-orange hover:bg-sanku-orange/90 h-9 rounded-xl font-bold">Save Changes</Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

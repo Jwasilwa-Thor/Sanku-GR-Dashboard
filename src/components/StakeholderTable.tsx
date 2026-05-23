@@ -45,72 +45,76 @@ export default function StakeholderTable({
   }
 
   return (
-    <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
-      <Table>
-        <TableHeader className="bg-slate-50/50">
-          <TableRow className="hover:bg-transparent">
-            <TableHead className="w-10">
+    <div className="futuristic-table-container overflow-x-auto">
+      <table className="futuristic-table min-w-[800px]">
+        <thead>
+          <tr>
+            <th className="w-10">
               <Checkbox
                 checked={allSelected}
                 onCheckedChange={() => onToggleAll && onToggleAll()}
-                className={someSelected ? "data-[state=unchecked]:bg-sanku-orange/20" : ""}
+                className={someSelected ? "data-[state=unchecked]:bg-sanku-orange/20 border-sanku-orange/40" : "border-slate-300"}
               />
-            </TableHead>
-            <TableHead className="font-bold text-slate-900">Name</TableHead>
-            <TableHead className="font-bold text-slate-900">Organization</TableHead>
-            <TableHead className="font-bold text-slate-900 hidden md:table-cell">Category</TableHead>
-            <TableHead className="font-bold text-slate-900">Influence</TableHead>
-            <TableHead className="font-bold text-slate-900">Support</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
+            </th>
+            <th>Stakeholder</th>
+            <th className="w-48">Organization</th>
+            <th className="w-36 hidden md:table-cell">Category</th>
+            <th className="w-32">Influence</th>
+            <th className="w-40">Support Level</th>
+          </tr>
+        </thead>
+        <tbody>
           {stakeholders.map((s) => {
             const checked = selectedIds.includes(s.id);
             return (
-              <TableRow 
+              <tr 
                 key={s.id} 
-                className={`cursor-pointer group ${checked ? "bg-sanku-orange/5" : "hover:bg-slate-50/50"}`}
+                className={`cursor-pointer group ${checked ? "bg-sanku-orange/5" : ""}`}
                 onClick={() => onSelect && onSelect(s.id)}
               >
-                <TableCell className="w-10">
+                <td className="w-10">
+                  <div className="glow-accent" />
                   <Checkbox
                     checked={checked}
                     onCheckedChange={() => onToggle && onToggle(s.id)}
                     onClick={(e) => e.stopPropagation()}
+                    className={checked ? "border-sanku-orange" : "border-slate-300"}
                   />
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-sanku-navy/5 flex items-center justify-center text-xs font-bold text-sanku-navy shrink-0 border border-sanku-navy/10">
+                </td>
+                <td>
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-xs font-black text-white shrink-0 shadow-lg group-hover:scale-110 transition-transform duration-300">
                       {s.full_name?.charAt(0)}
                     </div>
                     <div>
-                      <p className="font-bold text-sm text-slate-900 group-hover:text-sanku-orange transition-colors">{s.full_name}</p>
-                      <p className="text-[10px] text-slate-500 font-medium uppercase tracking-wider">{s.title || "—"}</p>
+                      <p className="font-black text-sm text-slate-900 group-hover:text-sanku-orange transition-colors duration-300">{s.full_name}</p>
+                      <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">{s.title || "Untitled Position"}</p>
                     </div>
                   </div>
-                </TableCell>
-                <TableCell className="text-sm font-medium text-slate-600">{s.organization}</TableCell>
-                <TableCell className="text-sm hidden md:table-cell">
-                  <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-wider bg-slate-50">
-                    {s.category || "Other"}
+                </td>
+                <td className="text-sm font-bold text-slate-600">{s.organization}</td>
+                <td className="hidden md:table-cell">
+                  <Badge variant="outline" className="text-[9px] font-black uppercase tracking-tighter bg-white/50 border-slate-200 text-slate-500 py-0.5">
+                    {s.category || "General"}
                   </Badge>
-                </TableCell>
-                <TableCell>
-                  <span className={`text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full ${influenceColor[s.influence_level] || ""}`}>
+                </td>
+                <td>
+                  <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-lg shadow-sm border ${influenceColor[s.influence_level] || "bg-slate-50 border-slate-100"}`}>
                     {s.influence_level}
                   </span>
-                </TableCell>
-                <TableCell>
-                  <span className={`text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full ${supportColor[s.support_level] || ""}`}>
-                    {s.support_level}
-                  </span>
-                </TableCell>
-              </TableRow>
+                </td>
+                <td>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-lg shadow-sm border ${supportColor[s.support_level] || "bg-slate-50 border-slate-100"}`}>
+                      {s.support_level}
+                    </span>
+                  </div>
+                </td>
+              </tr>
             );
           })}
-        </TableBody>
-      </Table>
+        </tbody>
+      </table>
     </div>
   );
 }

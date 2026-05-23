@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { Plus, Pencil, Trash2, ChevronDown, ChevronRight, Handshake, Target, Clock, AlertCircle, Search, MapPin, FileText, UserCircle } from "lucide-react";
+import { Plus, Pencil, Trash2, Handshake, Target, Clock, Search, UserCircle, Table2, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -54,7 +54,7 @@ export default function Partnerships() {
     try {
       const data = await crmClient.entities.Partner.list();
       setPartners(data);
-    } catch (err) {
+    } catch {
       toast.error("Could not load partners");
     } finally {
       setLoading(false);
@@ -83,7 +83,7 @@ export default function Partnerships() {
         toast.success("Partner updated");
       }
       setModal(null);
-    } catch (err) {
+    } catch {
       toast.error("Failed to save partner");
     }
   }
@@ -96,18 +96,18 @@ export default function Partnerships() {
       });
       setPartners(prev => prev.map(p => p.id === updated.id ? updated : p));
       toast.success(`Partner moved to ${newStage}`);
-    } catch (err) {
+    } catch {
       toast.error("Failed to update stage");
     }
   }
 
   async function deletePartner(id: string) {
-    if (!confirm("Are you sure you want to delete this partner?")) return;
+    if (!confirm("Are you sure?")) return;
     try {
       await crmClient.entities.Partner.delete(id);
-      setPartners((prev) => prev.filter((x) => x.id !== id));
-      toast.success("Partner deleted");
-    } catch (err) {
+      setPartners(prev => prev.filter(p => p.id !== id));
+      toast.success("Partner removed");
+    } catch {
       toast.error("Failed to delete partner");
     }
   }
@@ -115,33 +115,35 @@ export default function Partnerships() {
   if (loading) return <div className="flex items-center justify-center h-screen animate-pulse text-muted-foreground">Loading Partnerships...</div>;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Partnership Pipeline</h1>
-          <p className="text-muted-foreground mt-1 text-sm">Strategic alliances and collaboration tracking</p>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+        <div className="flex items-center gap-4">
+          <div className="pr-4 border-r border-slate-100">
+            <h1 className="text-xl font-bold tracking-tight text-slate-900 whitespace-nowrap">Partnership Pipeline</h1>
+            <p className="text-slate-500 text-[10px] uppercase font-bold tracking-wider mt-0.5 whitespace-nowrap">Strategic Alliances</p>
+          </div>
         </div>
-        <div className="flex gap-3">
-          <div className="flex gap-1 bg-secondary rounded-lg p-1 mr-2">
+        <div className="flex items-center gap-3">
+          <div className="flex gap-1 bg-slate-50 rounded-lg p-1">
             <button onClick={() => setView("table")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${view === "table" ? "bg-card shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}>
-              <TableIcon className="w-3.5 h-3.5" /> Table
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${view === "table" ? "bg-white shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}>
+              <Table2 className="w-3.5 h-3.5" /> Table
             </button>
             <button onClick={() => setView("pipeline")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${view === "pipeline" ? "bg-card shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}>
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${view === "pipeline" ? "bg-white shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}>
               <LayoutDashboard className="w-3.5 h-3.5" /> Pipeline
             </button>
           </div>
           <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-2.5 top-2.5 w-4 h-4 text-slate-400" />
             <Input 
-              placeholder="Search partners..." 
-              className="pl-9 h-9 w-64 text-sm" 
+              placeholder="Search..." 
+              className="pl-9 h-9 w-40 lg:w-48 text-xs rounded-xl border-slate-200 bg-slate-50/50" 
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
             />
           </div>
-          <Button size="sm" className="gap-1.5" onClick={() => setModal({ mode: "add", data: { ...emptyPartner } as Partner })}>
+          <Button size="sm" className="h-9 px-4 gap-1.5 rounded-xl bg-sanku-orange hover:bg-sanku-orange/90 text-white font-bold" onClick={() => setModal({ mode: "add", data: { ...emptyPartner } as Partner })}>
             <Plus className="w-4 h-4" /> New Partner
           </Button>
         </div>
@@ -181,50 +183,51 @@ export default function Partnerships() {
           ))}
         </div>
       ) : (
-        <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
-          <table className="w-full text-xs">
+        <div className="futuristic-table-container overflow-x-auto">
+          <table className="futuristic-table min-w-[1000px]">
             <thead>
-              <tr className="border-b bg-muted/60">
-                <th className="px-4 py-3 text-left font-semibold text-muted-foreground">Organization</th>
-                <th className="px-4 py-3 text-left font-semibold text-muted-foreground">Stage</th>
-                <th className="px-4 py-3 text-left font-semibold text-muted-foreground">Priority</th>
-                <th className="px-4 py-3 text-left font-semibold text-muted-foreground">MOU</th>
-                <th className="px-4 py-3 text-left font-semibold text-muted-foreground">Primary Contact</th>
+              <tr>
+                <th>Organization</th>
+                <th className="w-32">Stage</th>
+                <th className="w-28">Priority</th>
+                <th className="w-28">MOU Status</th>
+                <th className="w-48">Primary Contact</th>
                 <th className="w-16"></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <tbody>
               {filtered.map(p => (
-                <tr key={p.id} className="hover:bg-muted/20 transition-colors cursor-pointer" onClick={() => setDetailItem(p)}>
-                  <td className="px-4 py-3 font-medium">
+                <tr key={p.id} className="cursor-pointer group" onClick={() => setDetailItem(p)}>
+                  <td>
+                    <div className="glow-accent" />
                     <div className="flex flex-col">
-                      <span>{p.name}</span>
-                      <span className="text-[10px] text-muted-foreground uppercase">{p.type}</span>
+                      <span className="font-bold text-slate-900 leading-tight">{p.name}</span>
+                      <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest mt-0.5">{p.type}</span>
                     </div>
                   </td>
-                  <td className="px-4 py-3">
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${stageColors[p.stage]}`}>
+                  <td>
+                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${stageColors[p.stage]}`}>
                       {p.stage}
                     </span>
                   </td>
-                  <td className="px-4 py-3">
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${priorityColors[p.priority]}`}>
+                  <td>
+                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${priorityColors[p.priority]}`}>
                       {p.priority}
                     </span>
                   </td>
-                  <td className="px-4 py-3">
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${p.mou === "Yes" ? "bg-chart-2/10 text-chart-2" : "bg-muted text-muted-foreground"}`}>
+                  <td>
+                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${p.mou === "Yes" ? "bg-emerald-100 text-emerald-700 border-emerald-200" : "bg-slate-100 text-slate-500 border-slate-200"}`}>
                       {p.mou}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-muted-foreground">{p.contact}</td>
-                  <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
-                    <div className="flex justify-end gap-1">
-                      <button onClick={() => setModal({ mode: "edit", data: { ...p } })} className="p-1 rounded hover:bg-accent/10">
-                        <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
+                  <td className="text-slate-600 font-medium">{p.contact}</td>
+                  <td onClick={e => e.stopPropagation()}>
+                    <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button onClick={() => setModal({ mode: "edit", data: { ...p } })} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-sanku-orange transition-colors">
+                        <Pencil className="w-3.5 h-3.5" />
                       </button>
-                      <button onClick={() => deletePartner(p.id)} className="p-1 rounded hover:bg-destructive/10">
-                        <Trash2 className="w-3.5 h-3.5 text-muted-foreground hover:text-destructive" />
+                      <button onClick={() => deletePartner(p.id)} className="p-1.5 rounded-lg hover:bg-destructive/10 text-slate-400 hover:text-destructive transition-colors">
+                        <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   </td>
@@ -303,7 +306,7 @@ export default function Partnerships() {
       {/* Edit Modal */}
       {modal && (
         <Dialog open={!!modal} onOpenChange={() => setModal(null)}>
-          <DialogContent className="max-w-xl">
+          <DialogContent className="max-w-xl" aria-describedby={undefined}>
             <DialogHeader>
               <DialogTitle>{modal.mode === "add" ? "New Strategic Partner" : "Edit Partner"}</DialogTitle>
             </DialogHeader>
@@ -327,7 +330,7 @@ export default function Partnerships() {
               <div className="space-y-2">
                 <Label>Priority</Label>
                 <select className="w-full h-9 rounded-md border bg-background px-3" 
-                  value={modal.data.priority} onChange={e => setModal({ ...modal, data: { ...modal.data, priority: e.target.value as any } })}>
+                  value={modal.data.priority} onChange={e => setModal({ ...modal, data: { ...modal.data, priority: e.target.value as Partner['priority'] } })}>
                   {PRIORITIES.map(p => <option key={p}>{p}</option>)}
                 </select>
               </div>

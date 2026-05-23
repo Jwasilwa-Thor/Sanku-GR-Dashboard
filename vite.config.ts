@@ -17,9 +17,8 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "https://Sanku-GR.azurewebsites.net",
+        target: "http://localhost:7071",
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, "/api"),
       },
     },
   },

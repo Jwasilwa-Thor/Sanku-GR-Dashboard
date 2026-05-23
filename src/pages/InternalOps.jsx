@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, Fragment } from "react";
 import { Plus, Pencil, Trash2, CheckCircle, Circle, ChevronDown, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -115,18 +115,20 @@ export default function InternalOps() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Internal Ops &amp; Meetings</h1>
-          <p className="text-muted-foreground mt-1 text-sm">Team meetings, operational processes, and action items</p>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+        <div className="flex items-center gap-4">
+          <div className="pr-4 border-r border-slate-100">
+            <h1 className="text-xl font-bold tracking-tight text-slate-900 whitespace-nowrap">Internal Ops &amp; Meetings</h1>
+            <p className="text-slate-500 text-[10px] uppercase font-bold tracking-wider mt-0.5 whitespace-nowrap">Operational Management</p>
+          </div>
         </div>
-        <Button size="sm" className="gap-1.5" onClick={() => setModal({ mode: "add", type: tab, data: tab === "meetings" ? { ...emptyMeeting } : { ...emptyProcess } })}>
+        <Button size="sm" className="gap-1.5 h-9 rounded-xl bg-sanku-orange hover:bg-sanku-orange/90 text-white font-bold" onClick={() => setModal({ mode: "add", type: tab, data: tab === "meetings" ? { ...emptyMeeting } : { ...emptyProcess } })}>
           <Plus className="w-4 h-4" /> Add {tab === "meetings" ? "Meeting" : "Process"}
         </Button>
       </div>
 
-      <div className="flex gap-2 mb-5">
+      <div className="flex gap-2 mb-2">
         {["meetings", "processes"].map((t) => (
           <button key={t} onClick={() => setTab(t)}
             className={`px-4 py-2 rounded-lg text-sm font-medium capitalize transition-colors ${tab === t ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-secondary/80"}`}>
@@ -136,117 +138,127 @@ export default function InternalOps() {
       </div>
 
       {tab === "meetings" ? (
-        <div className="rounded-xl border bg-card shadow-sm overflow-x-auto">
-          <table className="w-full text-xs min-w-[700px]">
+        <div className="futuristic-table-container overflow-x-auto">
+          <table className="futuristic-table min-w-[900px]">
             <thead>
-              <tr className="border-b bg-muted/60">
-                <th className="px-4 py-3 text-left font-semibold text-muted-foreground min-w-[200px]">Meeting</th>
-                <th className="px-4 py-3 text-left font-semibold text-muted-foreground w-28">Type</th>
-                <th className="px-4 py-3 text-left font-semibold text-muted-foreground w-40">Date / Schedule</th>
-                <th className="px-4 py-3 text-left font-semibold text-muted-foreground w-40">Attendees</th>
-                <th className="px-4 py-3 text-center font-semibold text-muted-foreground w-28">Action Items</th>
-                <th className="w-16 px-2"></th>
+              <tr>
+                <th>Meeting</th>
+                <th className="w-28">Type</th>
+                <th className="w-48">Date / Schedule</th>
+                <th className="w-48">Attendees</th>
+                <th className="w-32 text-center">Action Items</th>
+                <th className="w-16"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {meetings.map((m) => (
-                <>
-                  <tr key={m.id} className="hover:bg-muted/20 transition-colors cursor-pointer" onClick={() => toggleRow(m.id)}>
-                    <td className="px-4 py-3 font-medium text-foreground">
-                      <div className="flex items-center gap-1.5">
-                        {expanded[m.id] ? <ChevronDown className="w-3.5 h-3.5 text-muted-foreground shrink-0" /> : <ChevronRight className="w-3.5 h-3.5 text-muted-foreground shrink-0" />}
-                        {m.title}
+                <Fragment key={m.id}>
+                  <tr className="cursor-pointer group" onClick={() => toggleRow(m.id)}>
+                    <td>
+                      <div className="glow-accent" />
+                      <div className="flex items-center gap-2">
+                        {expanded[m.id] ? <ChevronDown className="w-4 h-4 text-sanku-orange" /> : <ChevronRight className="w-4 h-4 text-slate-400" />}
+                        <span className="font-bold text-slate-900">{m.title}</span>
                       </div>
                     </td>
-                    <td className="px-4 py-3">
-                      <span className={`px-2 py-0.5 rounded-full text-[11px] font-medium ${typeColors[m.type] || "bg-muted text-muted-foreground"}`}>{m.type}</span>
+                    <td>
+                      <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${typeColors[m.type] || "bg-slate-100 text-slate-500"}`}>{m.type}</span>
                     </td>
-                    <td className="px-4 py-3 text-muted-foreground">{m.date}</td>
-                    <td className="px-4 py-3 text-muted-foreground">{m.attendees}</td>
-                    <td className="px-4 py-3 text-center text-muted-foreground">{(m.actions || []).length} item{(m.actions||[]).length !== 1 ? 's' : ''}</td>
-                    <td className="px-2 py-3" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex items-center gap-1 justify-end">
+                    <td className="text-slate-600 font-medium">{m.date}</td>
+                    <td className="text-slate-500 text-xs">{m.attendees}</td>
+                    <td className="text-center">
+                      <span className="font-mono font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md text-[11px]">
+                        {(m.actions || []).length}
+                      </span>
+                    </td>
+                    <td onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center gap-1 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
                         <button onClick={() => setModal({ mode: "edit", type: "meetings", data: { ...m } })}
-                          className="p-1 rounded hover:bg-accent/10 hover:text-accent text-muted-foreground transition-colors">
+                          className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-sanku-orange transition-colors">
                           <Pencil className="w-3.5 h-3.5" />
                         </button>
                         <button onClick={() => deleteMeeting(m.id)}
-                          className="p-1 rounded hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors">
+                          className="p-1.5 rounded-lg hover:bg-destructive/10 text-slate-400 hover:text-destructive transition-colors">
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     </td>
                   </tr>
                   {expanded[m.id] && (
-                    <tr key={m.id + "-exp"} className="bg-muted/30">
-                      <td colSpan={6} className="px-6 py-4">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-                          <div>
-                            <p className="font-semibold text-foreground mb-1">Notes</p>
-                            <p className="text-muted-foreground leading-relaxed">{m.notes}</p>
-                          </div>
-                          <div>
-                            <p className="font-semibold text-foreground mb-2">Action Items</p>
-                            <div className="space-y-1.5">
-                              {(m.actions || []).map((a, i) => (
-                                <div key={i} className="flex items-center gap-1.5">
-                                  {a.startsWith("Completed:") ? <CheckCircle className="w-3 h-3 text-chart-2 shrink-0" /> : <Circle className="w-3 h-3 text-muted-foreground shrink-0" />}
-                                  <span className={a.startsWith("Completed:") ? "line-through text-muted-foreground" : ""}>{a}</span>
-                                </div>
-                              ))}
+                    <tr className="bg-slate-50/80 backdrop-blur-sm">
+                      <td colSpan={6} className="p-0">
+                        <div className="px-12 py-6 border-l-2 border-sanku-orange/30 animate-in fade-in slide-in-from-left-2 duration-300">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 text-xs">
+                            <div>
+                              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Meeting Notes</p>
+                              <p className="text-slate-600 leading-relaxed bg-white/60 p-4 rounded-xl border border-slate-200/50">{m.notes}</p>
+                            </div>
+                            <div>
+                              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Action Registry</p>
+                              <div className="space-y-2">
+                                {(m.actions || []).map((a, i) => (
+                                  <div key={i} className="flex items-center gap-2 p-2 bg-white/40 rounded-lg border border-slate-100/50">
+                                    {a.startsWith("Completed:") ? <CheckCircle className="w-3.5 h-3.5 text-emerald-500 shrink-0" /> : <Circle className="w-3.5 h-3.5 text-slate-300 shrink-0" />}
+                                    <span className={`text-[11px] ${a.startsWith("Completed:") ? "line-through text-slate-400" : "text-slate-700 font-medium"}`}>{a}</span>
+                                  </div>
+                                ))}
+                              </div>
                             </div>
                           </div>
                         </div>
                       </td>
                     </tr>
                   )}
-                </>
+                </Fragment>
               ))}
             </tbody>
           </table>
         </div>
       ) : (
-        <div className="rounded-xl border bg-card shadow-sm overflow-x-auto">
-          <table className="w-full text-xs min-w-[600px]">
+        <div className="futuristic-table-container overflow-x-auto">
+          <table className="futuristic-table min-w-[800px]">
             <thead>
-              <tr className="border-b bg-muted/60">
-                <th className="px-4 py-3 text-left font-semibold text-muted-foreground w-56">Process Name</th>
-                <th className="px-4 py-3 text-left font-semibold text-muted-foreground">Description / Protocol</th>
-                <th className="w-16 px-2"></th>
+              <tr>
+                <th className="w-64">Process Name</th>
+                <th>Description / Protocol</th>
+                <th className="w-16"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {processes.map((p) => (
-                <>
-                  <tr key={p.id} className="hover:bg-muted/20 transition-colors cursor-pointer" onClick={() => toggleRow("p" + p.id)}>
-                    <td className="px-4 py-3 font-medium text-foreground">
-                      <div className="flex items-center gap-1.5">
-                        {expanded["p" + p.id] ? <ChevronDown className="w-3.5 h-3.5 text-muted-foreground shrink-0" /> : <ChevronRight className="w-3.5 h-3.5 text-muted-foreground shrink-0" />}
-                        {p.title}
+                <Fragment key={p.id}>
+                  <tr className="cursor-pointer group" onClick={() => toggleRow("p" + p.id)}>
+                    <td>
+                      <div className="glow-accent" />
+                      <div className="flex items-center gap-2">
+                        {expanded["p" + p.id] ? <ChevronDown className="w-4 h-4 text-sanku-orange" /> : <ChevronRight className="w-4 h-4 text-slate-400" />}
+                        <span className="font-bold text-slate-900">{p.title}</span>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-muted-foreground line-clamp-1">{p.detail}</td>
-                    <td className="px-2 py-3" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex items-center gap-1 justify-end">
+                    <td className="text-slate-600 text-xs line-clamp-1">{p.detail}</td>
+                    <td onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center gap-1 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
                         <button onClick={() => setModal({ mode: "edit", type: "processes", data: { ...p } })}
-                          className="p-1 rounded hover:bg-accent/10 hover:text-accent text-muted-foreground transition-colors">
+                          className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-sanku-orange transition-colors">
                           <Pencil className="w-3.5 h-3.5" />
                         </button>
                         <button onClick={() => deleteProcess(p.id)}
-                          className="p-1 rounded hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors">
+                          className="p-1.5 rounded-lg hover:bg-destructive/10 text-slate-400 hover:text-destructive transition-colors">
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     </td>
                   </tr>
                   {expanded["p" + p.id] && (
-                    <tr key={p.id + "-exp"} className="bg-muted/30">
-                      <td colSpan={3} className="px-6 py-4">
-                        <p className="text-xs text-muted-foreground leading-relaxed">{p.detail}</p>
+                    <tr className="bg-slate-50/80 backdrop-blur-sm">
+                      <td colSpan={3} className="p-0">
+                        <div className="px-12 py-4 border-l-2 border-sanku-orange/30 animate-in fade-in slide-in-from-left-2 duration-300">
+                          <p className="text-xs text-slate-600 leading-relaxed bg-white/60 p-4 rounded-xl border border-slate-200/50">{p.detail}</p>
+                        </div>
                       </td>
                     </tr>
                   )}
-                </>
+                </Fragment>
               ))}
             </tbody>
           </table>
@@ -274,7 +286,7 @@ function MeetingModal({ title, initial, onSave, onClose }) {
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-lg" aria-describedby={undefined}>
         <DialogHeader><DialogTitle>{title}</DialogTitle></DialogHeader>
         <div className="space-y-3 mt-2">
           <div><Label className="text-xs mb-1 block">Meeting Title</Label><Input value={form.title} onChange={(e) => set("title", e.target.value)} /></div>
@@ -312,7 +324,7 @@ function ProcessModal({ title, initial, onSave, onClose }) {
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-lg" aria-describedby={undefined}>
         <DialogHeader><DialogTitle>{title}</DialogTitle></DialogHeader>
         <div className="space-y-3 mt-2">
           <div><Label className="text-xs mb-1 block">Process Name</Label><Input value={form.title} onChange={(e) => set("title", e.target.value)} /></div>

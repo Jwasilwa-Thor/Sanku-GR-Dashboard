@@ -1,5 +1,5 @@
-import { Stakeholder, Engagement, Project, Policy, Partner, KPI, Meeting, Process } from "../types";
-import { initialProjects, initialPolicies } from "../utils/grData.js";
+import { Stakeholder, Engagement, Project, Policy, Partner, KPI, Meeting, Process, Budget, AuditLog } from "../types";
+import { initialProjects } from "../utils/grData.js";
 
 export const mockProjects: Project[] = initialProjects as unknown as Project[];
 export const mockPolicies: Policy[] = [
@@ -173,10 +173,51 @@ export const mockMeetings: Meeting[] = [
 ];
 
 export const mockProcesses: Process[] = [
-  { id: "1", title: "Stakeholder Entry Process", detail: "All new stakeholders are added to the CRM within 48 hours of first contact. Include full profile, influence/support rating, and initial notes." },
-  { id: "2", title: "Engagement Logging", detail: "Every government interaction must be logged in the CRM within 24 hours including subject, outcome, and follow-up date." },
-  { id: "3", title: "Monthly Reporting", detail: "GR lead submits a monthly narrative report to Country Director by the 5th of each month covering engagements, policy progress, and KPIs." },
-  { id: "4", title: "Escalation Protocol", detail: "Any political risk or significant shift in stakeholder position must be escalated to Country Director within 24 hours." },
+  { id: "1", title: "Quarterly Donor Reporting", detail: "Collection of impact data and financial utilization for donor reports." },
+  { id: "2", title: "Stakeholder Onboarding", detail: "Process for introducing new institutional partners to the DosiFlo tech." },
+];
+
+export const mockBudgets: Budget[] = [
+  {
+    id: "b1",
+    lineItem: "Core Operations",
+    totalBudget: 5000000,
+    fiscalYear: "2026",
+    category: "Operations",
+    links: []
+  },
+  {
+    id: "b2",
+    lineItem: "Advocacy & Policy",
+    totalBudget: 3000000,
+    fiscalYear: "2026",
+    category: "Advocacy",
+    links: [
+      { id: "bl1", budgetId: "b2", projectId: "1", allocatedAmount: 1500000, linkedAt: "2026-01-15T10:00:00Z", linkedBy: "Admin" }
+    ]
+  },
+  {
+    id: "b3",
+    lineItem: "Travel & Per Diem",
+    totalBudget: 1500000,
+    fiscalYear: "2026",
+    category: "Travel",
+    links: [
+      { id: "bl2", budgetId: "b3", projectId: "1", activityId: "t1", allocatedAmount: 7000, linkedAt: "2026-01-20T14:30:00Z", linkedBy: "Admin" }
+    ]
+  }
+];
+
+export const mockAuditLogs: AuditLog[] = [
+  {
+    id: "a1",
+    entityType: "Link",
+    entityId: "bl1",
+    action: "Link",
+    changes: "Linked project 'National Food Safety Bill Advocacy' to 'Advocacy & Policy' budget.",
+    timestamp: "2026-01-15T10:00:00Z",
+    userId: "Admin"
+  }
 ];
 
 export const mockStakeholders: Stakeholder[] = [

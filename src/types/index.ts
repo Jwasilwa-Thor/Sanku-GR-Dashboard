@@ -35,6 +35,35 @@ export interface Engagement {
   notes: string;
 }
 
+export interface BudgetLink {
+  id: string;
+  budgetId: string;
+  projectId?: string;
+  activityId?: string; // Links to a specific activity/travel record within a project
+  allocatedAmount: number;
+  linkedAt: string;
+  linkedBy: string;
+}
+
+export interface Budget {
+  id: string;
+  lineItem: string;
+  totalBudget: number;
+  fiscalYear: string;
+  category: "Personnel" | "Operations" | "Travel" | "Advocacy" | "Other";
+  links: BudgetLink[];
+}
+
+export interface AuditLog {
+  id: string;
+  entityType: "Project" | "Budget" | "Link";
+  entityId: string;
+  action: "Create" | "Update" | "Delete" | "Link" | "Unlink";
+  changes: string;
+  timestamp: string;
+  userId: string;
+}
+
 export interface Project {
   id: string;
   name: string;
@@ -47,9 +76,9 @@ export interface Project {
   budgetLine: string;
   budgetKES: number;
   spentKES: number;
-  meetings: Array<{ date: string; title: string }>;
-  followUps: Array<{ date: string; label: string }>;
-  travel: Array<{ who: string; destination: string; days: number; perDiem: number; transport: number }>;
+  meetings: Array<{ id: string; date: string; title: string }>;
+  followUps: Array<{ id: string; date: string; label: string }>;
+  travel: Array<{ id: string; who: string; destination: string; days: number; perDiem: number; transport: number }>;
   linkedPolicies: string[];
 }
 

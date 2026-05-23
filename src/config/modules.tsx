@@ -11,7 +11,6 @@ import {
   Shield,
   Handshake,
   Settings,
-  Wallet,
   LayoutDashboard,
 } from "lucide-react";
 
@@ -19,7 +18,7 @@ export const mainNavItems: Array<{ path: string; label: string; icon: LucideIcon
   { path: "/", label: "Dashboard", icon: LayoutDashboard },
   { path: "/stakeholders", label: "Stakeholders", icon: Users },
   { path: "/power-map", label: "Power Map", icon: Map },
-  { path: "/about", label: "About Sanku GR", icon: LayoutGrid },
+  { path: "/about", label: "About", icon: LayoutGrid },
 ];
 
 export type AppModule = {
@@ -117,8 +116,8 @@ export const appModules: AppModule[] = [
   },
   {
     path: "/about",
-    label: "About Sanku GR",
-    overviewTitle: "About Sanku GR",
+    label: "About",
+    overviewTitle: "About",
     icon: LayoutGrid,
     description: "Overview of the Sanku Kenya Government Relations CRM platform.",
     iconBg: "bg-primary/10 text-primary",

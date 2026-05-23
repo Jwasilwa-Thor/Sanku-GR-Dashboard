@@ -1,6 +1,28 @@
 import api from "../lib/api";
-import { mockStakeholders, mockEngagements, mockProjects, mockPolicies, mockPartners, mockKPIs, mockMeetings, mockProcesses } from "../data/mock";
-import { Stakeholder, Engagement, Project, Policy, Partner, KPI, Meeting, Process } from "../types";
+import { 
+  mockStakeholders, 
+  mockEngagements, 
+  mockProjects, 
+  mockPolicies, 
+  mockPartners, 
+  mockKPIs, 
+  mockMeetings, 
+  mockProcesses,
+  mockBudgets,
+  mockAuditLogs
+} from "../data/mock";
+import { 
+  Stakeholder, 
+  Engagement, 
+  Project, 
+  Policy, 
+  Partner, 
+  KPI, 
+  Meeting, 
+  Process,
+  Budget,
+  AuditLog
+} from "../types";
 
 // This is a robust CRM client that handles both live Azure API calls 
 // and gracefully falls back to mock data when the API is unconfigured.
@@ -124,5 +146,7 @@ export const crmClient = {
     KPI: new EntityClient<KPI>("KPIs", mockKPIs),
     Meeting: new EntityClient<Meeting>("Meetings", mockMeetings),
     Process: new EntityClient<Process>("Processes", mockProcesses),
+    Budget: new EntityClient<Budget>("Budgets", mockBudgets),
+    AuditLog: new EntityClient<AuditLog>("AuditLogs", mockAuditLogs),
   }
 };

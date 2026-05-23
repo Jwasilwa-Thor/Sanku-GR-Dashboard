@@ -83,10 +83,18 @@ export default function StakeholderDetail() {
   const s = stakeholder;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <Button variant="ghost" onClick={() => navigate("/stakeholders")} className="mb-4 gap-2 text-muted-foreground">
-        <ArrowLeft className="w-4 h-4" /> Back to Stakeholders
-      </Button>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+        <Button variant="ghost" onClick={() => navigate("/stakeholders")} className="h-9 px-3 gap-2 text-slate-500 hover:text-sanku-orange transition-colors font-medium">
+          <ArrowLeft className="w-4 h-4" /> 
+          <span className="whitespace-nowrap">Back to Stakeholders</span>
+        </Button>
+        <div className="flex items-center gap-2">
+          <Badge className="bg-primary/10 text-primary border-0 font-bold px-3 py-1 rounded-full text-[10px] uppercase tracking-wider whitespace-nowrap">
+            Profile View
+          </Badge>
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Profile */}
@@ -193,14 +201,14 @@ export default function StakeholderDetail() {
       </div>
 
       <Dialog open={showEdit} onOpenChange={setShowEdit}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" aria-describedby={undefined}>
           <DialogHeader><DialogTitle>Edit Stakeholder</DialogTitle></DialogHeader>
           <StakeholderForm initial={s} onSubmit={handleUpdate} onCancel={() => setShowEdit(false)} loading={saving} />
         </DialogContent>
       </Dialog>
 
       <Dialog open={showEngagement} onOpenChange={setShowEngagement}>
-        <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto" aria-describedby={undefined}>
           <DialogHeader><DialogTitle>Log Engagement</DialogTitle></DialogHeader>
           <EngagementForm stakeholderId={id} onSubmit={handleAddEngagement} onCancel={() => setShowEngagement(false)} loading={saving} />
         </DialogContent>
