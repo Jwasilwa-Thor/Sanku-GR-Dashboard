@@ -1,22 +1,14 @@
-import React, { useState, useEffect, useMemo, Fragment } from "react";
+import React, { useState, useEffect, Fragment } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { parseISO, differenceInDays, format, startOfMonth, endOfMonth, eachMonthOfInterval } from "date-fns";
-import { CalendarDays, Table2, Plus, Pencil, Trash2, ChevronDown, ChevronRight, Plane, FileText, Link2, History } from "lucide-react";
+import { Plus, Pencil, Trash2, ChevronDown, ChevronRight, Link2, History } from "lucide-react";
 import { crmClient } from "@/api/crmClient";
-import { budgetLines, fmtKES } from "@/utils/grData";
+import { fmtKES } from "@/utils/grData";
 import { toast } from "sonner";
-import { Budget as BudgetType, Project, BudgetLink, AuditLog } from "@/types";
-
-const statusColors = {
-  Active: "bg-chart-2/10 text-chart-2",
-  Planning: "bg-chart-3/10 text-chart-3",
-  Completed: "bg-muted text-muted-foreground",
-  "On Hold": "bg-destructive/10 text-destructive",
-};
+import { Budget as BudgetType, Project, BudgetLink } from "@/types";
 
 // ─── Linkage Sub-table ────────────────────────────────────────────────────────
 function LinkageTable({ links, projects, onUnlink }) {
@@ -135,7 +127,7 @@ function TableView({ items, projects, onEdit, onDelete, onLink }) {
                         <LinkageTable 
                           links={b.links || []} 
                           projects={projects} 
-                          onUnlink={(linkId) => {/* Implement unlink logic */}}
+                          onUnlink={() => {}}
                         />
                       </div>
                     </td>
@@ -154,9 +146,8 @@ function TableView({ items, projects, onEdit, onDelete, onLink }) {
 export default function Budget() {
   const [budgets, setBudgets] = useState<BudgetType[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
-  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
-  const [modal, setModal] = useState<{ mode: "add" | "edit" | "link"; data: any } | null>(null);
+  const [modal, setModal] = useState<{ mode: "add" | "edit" | "link"; data: BudgetType | Partial<BudgetLink> | Record<string, unknown> } | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -165,15 +156,13 @@ export default function Budget() {
   async function fetchData() {
     setLoading(true);
     try {
-      const [b, p, a] = await Promise.all([
+      const [b, p] = await Promise.all([
         crmClient.entities.Budget.list(),
-        crmClient.entities.Project.list(),
-        crmClient.entities.AuditLog.list()
+        crmClient.entities.Project.list()
       ]);
       setBudgets(b);
       setProjects(p);
-      setAuditLogs(a);
-    } catch (err) {
+    } catch {
       toast.error("Failed to load budget data");
     } finally {
       setLoading(false);
@@ -187,12 +176,12 @@ export default function Budget() {
         setBudgets(prev => prev.map(b => b.id === updated.id ? updated : b));
         toast.success("Budget updated");
       } else {
-        const created = await crmClient.entities.Budget.create({ ...data, links: [] });
+        const created = await crmClient.entities.Budget.create({ ...data, links: [] } as BudgetType);
         setBudgets(prev => [...prev, created]);
         toast.success("Budget entry created");
       }
       setModal(null);
-    } catch (err) {
+    } catch {
       toast.error("Operation failed");
     }
   }
@@ -244,7 +233,7 @@ export default function Budget() {
       toast.success("Link established and logged");
       setModal(null);
       fetchData(); // Refresh audit logs
-    } catch (err) {
+    } catch {
       toast.error("Linking failed");
     }
   }

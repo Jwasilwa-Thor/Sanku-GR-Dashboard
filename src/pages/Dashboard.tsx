@@ -12,9 +12,7 @@ import {
   Target, 
   CalendarDays, 
   Activity, 
-  ArrowUpRight, 
-  MapPin, 
-  AlertCircle 
+  ArrowUpRight
 } from 'lucide-react';
 import { 
   BarChart, 
@@ -23,12 +21,12 @@ import {
   YAxis, 
   CartesianGrid, 
   Tooltip, 
-  ResponsiveContainer, 
-  Cell, 
-  ScatterChart, 
-  Scatter, 
-  ZAxis, 
-  LabelList 
+  ResponsiveContainer,
+  Cell,
+  ScatterChart,
+  Scatter,
+  ZAxis,
+  LabelList
 } from 'recharts';
 import { crmClient } from '../api/crmClient';
 import { Stakeholder, Engagement, Policy, Partner, Project, SupportLevel, InfluenceLevel } from '../types';
@@ -36,7 +34,6 @@ import logo from '../assets/logo.png';
 import { fmtKES } from '../utils/grData';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format, parseISO, differenceInDays, startOfMonth, endOfMonth, eachMonthOfInterval } from "date-fns";
-import { Badge } from "@/components/ui/badge";
 
 const SUPPORT_LEVELS: SupportLevel[] = ["Strong Opponent", "Opponent", "Neutral", "Supporter", "Champion"];
 const INFLUENCE_LEVELS: InfluenceLevel[] = ["Very High", "High", "Medium", "Low"];
@@ -55,14 +52,6 @@ const dotColorClass: Record<string, string> = {
   "Neutral": "bg-slate-400",
   "Supporter": "bg-emerald-400",
   "Champion": "bg-emerald-600",
-};
-
-const stageColors: Record<string, string> = {
-  Monitoring: "border-muted text-muted-foreground",
-  Analysis: "border-chart-3 text-chart-3",
-  Engagement: "border-primary text-primary",
-  "Decision pending": "border-chart-4 text-chart-4",
-  Closed: "border-chart-2 text-chart-2",
 };
 
 const priorityColors: Record<string, string> = {
@@ -379,7 +368,7 @@ const Dashboard: React.FC = () => {
                   <ZAxis type="number" range={[100, 100]} />
                   <Tooltip 
                     cursor={{ strokeDasharray: '3 3' }}
-                    content={({ active, payload }: any) => {
+                    content={({ active, payload }) => {
                       if (active && payload && payload.length) {
                         const d = payload[0].payload;
                         return (
@@ -459,7 +448,7 @@ const Dashboard: React.FC = () => {
                   </div>
                 </div>
                 <div className="max-h-[500px] overflow-y-auto">
-                  {data.projects.map((p, pi) => {
+                  {data.projects.map((p) => {
                     const off = dayOffset(p.start);
                     const span = daySpan(p.start, p.end);
                     const pct = Math.round((p.spentKES / p.budgetKES) * 100);

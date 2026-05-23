@@ -7,7 +7,6 @@ import {
   Search, 
   Menu, 
   LayoutDashboard, 
-  Settings,
   X,
   User,
   ExternalLink,
