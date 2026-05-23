@@ -9,7 +9,7 @@ import { Plus, Pencil, Trash2, ChevronDown, ChevronRight, Plane, FileText, Dolla
 import { crmClient } from "@/api/crmClient";
 import { budgetLines, fmtKES } from "@/utils/grData";
 import { toast } from "sonner";
-import { Project, Policy, Stakeholder, Budget, BudgetLink } from "@/types";
+import { Project, Policy, Budget, BudgetLink } from "@/types";
 
 const statusColors: Record<string, string> = {
   Active: "bg-chart-2/10 text-chart-2",
@@ -193,13 +193,12 @@ function TableView({ items, policies, onEdit, onDelete }: { items: Project[], po
 
 // ─── Gantt ────────────────────────────────────────────────────────────────────
 function GanttView({ items }: { items: Project[] }) {
-  const { GANTT_START, GANTT_END, months, totalDays } = useMemo(() => {
+  const { GANTT_START, months, totalDays } = useMemo(() => {
     if (items.length === 0) {
       const start = startOfMonth(new Date());
       const end = endOfMonth(new Date(start.getTime() + 365 * 24 * 60 * 60 * 1000));
       return {
         GANTT_START: start,
-        GANTT_END: end,
         months: eachMonthOfInterval({ start, end }),
         totalDays: differenceInDays(end, start) + 1
       };
@@ -214,7 +213,6 @@ function GanttView({ items }: { items: Project[] }) {
     
     return {
       GANTT_START: start,
-      GANTT_END: end,
       months: eachMonthOfInterval({ start, end }),
       totalDays: differenceInDays(end, start) + 1
     };
@@ -308,7 +306,7 @@ function ProjectModal({ initial, policies, onSave, onClose }: ProjectModalProps)
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [links, setLinks] = useState<BudgetLink[]>([]);
   
-  const set = (k: keyof Project, v: any) => setForm((f) => ({ ...f, [k]: v }));
+  const set = (k: keyof Project, v: unknown) => setForm((f) => ({ ...f, [k]: v }));
 
   useEffect(() => {
     crmClient.entities.Budget.list().then(setBudgets);

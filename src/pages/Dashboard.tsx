@@ -181,13 +181,12 @@ const Dashboard: React.FC = () => {
   }, [data.stakeholders]);
 
   // Project Gantt Helpers
-  const { GANTT_START, GANTT_END, months, totalDays } = useMemo(() => {
+  const { GANTT_START, months, totalDays } = useMemo(() => {
     if (data.projects.length === 0) {
       const start = startOfMonth(new Date());
       const end = endOfMonth(new Date(start.getTime() + 365 * 24 * 60 * 60 * 1000));
       return {
         GANTT_START: start,
-        GANTT_END: end,
         months: eachMonthOfInterval({ start, end }),
         totalDays: differenceInDays(end, start) + 1
       };
@@ -202,7 +201,6 @@ const Dashboard: React.FC = () => {
     
     return {
       GANTT_START: start,
-      GANTT_END: end,
       months: eachMonthOfInterval({ start, end }),
       totalDays: differenceInDays(end, start) + 1
     };

@@ -67,7 +67,7 @@ function LinkageTable({ links, projects, onUnlink }) {
 }
 
 // ─── Table View ────────────────────────────────────────────────────────────────
-function TableView({ items, projects, onEdit, onDelete, onLink }) {
+function TableView({ items, projects, onEdit, onDelete, onLink, onDeleteLink }) {
   const [expanded, setExpanded] = useState({});
   const toggle = (id) => setExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
 
@@ -309,6 +309,7 @@ export default function Budget() {
         onEdit={(b) => setModal({ mode: "edit", data: b })}
         onDelete={deleteBudget}
         onLink={(b) => setModal({ mode: "link", data: { budgetId: b.id } })}
+        onDeleteLink={onDeleteLink}
       />
 
       {/* Modals */}
