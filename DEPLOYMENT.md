@@ -56,7 +56,21 @@ To maintain high reliability and security, the following branch protection rules
 4. Obtain at least one peer review.
 5. Merge the PR, which will trigger the deployment to Azure.
 
-## 4. Maintenance
+## 4. Secret Management & Security
+
+To ensure the security of credentials (such as GitHub Personal Access Tokens), follow these mandatory protocols:
+
+### Local Development
+- **No Hardcoding**: Never hard-code tokens or secrets in the source code or configuration files.
+- **Environment Variables**: Use `.env` files for local development. Copy `.env.example` to `.env` and add your secrets there.
+- **Git Config**: Ensure `git remote` URLs do not contain plaintext tokens. Use standard HTTPS or SSH URLs and let your OS credential manager handle authentication.
+
+### CI/CD & Production
+- **GitHub Secrets**: Store all deployment tokens and API keys in **GitHub Actions Secrets**. Reference them in workflow files using `${{ secrets.SECRET_NAME }}`.
+- **Token Rotation**: Rotate all Personal Access Tokens (PATs) every 90 days.
+- **Minimum Privilege**: Ensure tokens only have the minimum required scopes (e.g., `repo` for deployment, `read:org` for team access).
+
+## 5. Maintenance
 - Regularly update dependencies to patch security vulnerabilities.
 - Monitor Azure Function logs and Static Web App environment health.
 - Avoid committing build artifacts (like `.zip` files) to the repository.
